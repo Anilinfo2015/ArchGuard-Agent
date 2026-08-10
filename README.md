@@ -28,4 +28,5 @@ python -m archguard.cli --structurizr build/workspace.json \
 ```
 
 The command writes `archguard-results.json` and exits non-zero only for blocking
-findings. Use `action.yml` from a GitHub Actions workflow to run the same check.
+findings. Use `action.yml` from a GitHub Actions workflow to run the same check;
+provide its required `changed-files` input as a newline-separated PR file list.

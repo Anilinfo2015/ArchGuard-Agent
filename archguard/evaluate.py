@@ -33,7 +33,9 @@ def _approved(graph: ArchitectureGraph) -> dict[tuple[str, str], Edge]:
 
 
 def _evidence(edge: Edge) -> str:
-    return f"{edge.evidence.artifact}:{edge.evidence.line or 1}"
+    if edge.evidence.line is None:
+        return edge.evidence.artifact
+    return f"{edge.evidence.artifact}:{edge.evidence.line}"
 
 
 def evaluate(graph: ArchitectureGraph, changed_artifacts: set[str] | None = None) -> list[Finding]:

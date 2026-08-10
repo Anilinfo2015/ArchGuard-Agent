@@ -10,6 +10,9 @@ inputs:
   terraform-plan-json:
     description: Optional terraform show -json output
     required: false
+  changed-files:
+    description: Newline-separated paths changed by this pull request
+    required: true
 runs:
   using: composite
   steps:
@@ -20,8 +23,12 @@ runs:
         STRUCTURIZR_JSON: ${{ inputs.structurizr-json }}
         DEPENDENCY_CRUISER_JSON: ${{ inputs.dependency-cruiser-json }}
         TERRAFORM_PLAN_JSON: ${{ inputs.terraform-plan-json }}
+        CHANGED_FILES: ${{ inputs.changed-files }}
       run: |
         args=(--structurizr "$STRUCTURIZR_JSON")
         if [ -n "$DEPENDENCY_CRUISER_JSON" ]; then args+=(--dependency-cruiser "$DEPENDENCY_CRUISER_JSON"); fi
         if [ -n "$TERRAFORM_PLAN_JSON" ]; then args+=(--terraform-plan "$TERRAFORM_PLAN_JSON"); fi
+        while IFS= read -r file; do
+          if [ -n "$file" ]; then args+=(--changed-file "$file"); fi
+        done <<< "$CHANGED_FILES"
         python -m archguard.cli "${args[@]}"
