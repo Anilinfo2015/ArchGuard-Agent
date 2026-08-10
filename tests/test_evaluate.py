@@ -8,7 +8,7 @@ def graph_with_nodes() -> ArchitectureGraph:
     graph = ArchitectureGraph()
     for identifier, name, tier, context in (
         ("hld:order", "order", "hld", "order"),
-        ("hld:inventory", "inventory", "hld", "inventory"),
+        ("hld:legacy", "legacy", "hld", "legacy"),
         ("lld:order", "src/order/client.ts", "lld", "order"),
         ("lld:legacy", "src/legacy/client.ts", "lld", "legacy"),
     ):
@@ -34,18 +34,23 @@ class EvaluateTests(unittest.TestCase):
 
         self.assertEqual(evaluate(graph)[0].severity, "advisory")
 
-    def test_mode_mismatch_blocks_and_patch_is_validated(self) -> None:
+    def test_mode_mismatch_blocks(self) -> None:
         graph = graph_with_nodes()
-        graph.add_edge(Edge("hld:order", "hld:inventory", "hld", "ALLOWS", "async", Evidence("workspace.json")))
+        graph.add_edge(Edge("hld:order", "hld:legacy", "hld", "ALLOWS", "async", Evidence("workspace.json")))
         graph.add_edge(Edge("lld:order", "lld:legacy", "lld", "CALLS", "sync", Evidence("client.ts", 18)))
         findings = evaluate(graph)
 
-        self.assertEqual(findings[0].policy_id, "ARC-DEP-002")
+        self.assertEqual(findings[0].policy_id, "ARC-COM-003")
+
+    def test_patch_is_validated_against_hld_nodes(self) -> None:
+        graph = graph_with_nodes()
+        graph.add_edge(Edge("lld:order", "lld:legacy", "lld", "CALLS", "sync", Evidence("client.ts", 18)))
+        finding = evaluate(graph)[0]
+
         self.assertEqual(
-            validated_sync_patch(graph, findings[0]),
-            'src/order/client.ts -> src/legacy/client.ts "Declared implementation dependency" "sync"',
+            validated_sync_patch(graph, finding),
+            'order -> legacy "Declared implementation dependency" "sync"',
         )
-        self.assertTrue(any(finding.policy_id == "ARC-PHA-006" for finding in findings))
 
 
 if __name__ == "__main__":

@@ -79,15 +79,25 @@ def validated_sync_patch(graph: ArchitectureGraph, finding: Finding) -> str | No
     """Return only a suggestion which clears its deterministic finding in-memory."""
     if finding.policy_id != "ARC-DEP-002" or finding.edge.evidence.confidence < 0.9:
         return None
+    source_context = _context(graph, finding.edge.source)
+    target_context = _context(graph, finding.edge.target)
+    hld_nodes = {
+        _context(graph, identifier): identifier
+        for identifier, node in graph.nodes.items() if node.tier == "hld"
+    }
+    source = hld_nodes.get(source_context)
+    target = hld_nodes.get(target_context)
+    if not source or not target:
+        return None
     candidate = graph.copy()
     candidate.add_edge(Edge(
-        finding.edge.source, finding.edge.target, "hld", "ALLOWS", finding.edge.mode,
+        source, target, "hld", "ALLOWS", finding.edge.mode,
         finding.edge.evidence,
     ))
     remaining = evaluate(candidate)
     if any(item.policy_id == finding.policy_id and item.evidence == finding.evidence for item in remaining):
         return None
-    source = graph.nodes[finding.edge.source].name
-    target = graph.nodes[finding.edge.target].name
-    return f'{source} -> {target} "Declared implementation dependency" "{finding.edge.mode or "unknown"}"'
-
+    return (
+        f'{graph.nodes[source].name} -> {graph.nodes[target].name} '
+        f'"Declared implementation dependency" "{finding.edge.mode or "unknown"}"'
+    )

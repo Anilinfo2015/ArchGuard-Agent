@@ -16,8 +16,12 @@ runs:
     - shell: bash
       run: python -m pip install "$GITHUB_ACTION_PATH"
     - shell: bash
+      env:
+        STRUCTURIZR_JSON: ${{ inputs.structurizr-json }}
+        DEPENDENCY_CRUISER_JSON: ${{ inputs.dependency-cruiser-json }}
+        TERRAFORM_PLAN_JSON: ${{ inputs.terraform-plan-json }}
       run: |
-        args=(--structurizr "${{ inputs.structurizr-json }}")
-        if [ -n "${{ inputs.dependency-cruiser-json }}" ]; then args+=(--dependency-cruiser "${{ inputs.dependency-cruiser-json }}"); fi
-        if [ -n "${{ inputs.terraform-plan-json }}" ]; then args+=(--terraform-plan "${{ inputs.terraform-plan-json }}"); fi
+        args=(--structurizr "$STRUCTURIZR_JSON")
+        if [ -n "$DEPENDENCY_CRUISER_JSON" ]; then args+=(--dependency-cruiser "$DEPENDENCY_CRUISER_JSON"); fi
+        if [ -n "$TERRAFORM_PLAN_JSON" ]; then args+=(--terraform-plan "$TERRAFORM_PLAN_JSON"); fi
         python -m archguard.cli "${args[@]}"
