@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+archguard/__init__.py
+archguard/cli.py
+archguard/evaluate.py
+archguard/ingest.py
+archguard/model.py
+archguard_ai.egg-info/PKG-INFO
+archguard_ai.egg-info/SOURCES.txt
+archguard_ai.egg-info/dependency_links.txt
+archguard_ai.egg-info/entry_points.txt
+archguard_ai.egg-info/top_level.txt
+tests/test_evaluate.py
