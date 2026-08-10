@@ -1,0 +1,22 @@
+name: ArchGuard AI
+description: Detect PR-scoped architecture drift between Structurizr and implementation evidence.
+inputs:
+  structurizr-json:
+    description: Structurizr CLI JSON export path
+    required: true
+  dependency-cruiser-json:
+    description: Optional dependency-cruiser JSON report
+    required: false
+  terraform-plan-json:
+    description: Optional terraform show -json output
+    required: false
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        args=(--structurizr "${{ inputs.structurizr-json }}")
+        if [ -n "${{ inputs.dependency-cruiser-json }}" ]; then args+=(--dependency-cruiser "${{ inputs.dependency-cruiser-json }}"); fi
+        if [ -n "${{ inputs.terraform-plan-json }}" ]; then args+=(--terraform-plan "${{ inputs.terraform-plan-json }}"); fi
+        python -m archguard.cli "${args[@]}"
+
