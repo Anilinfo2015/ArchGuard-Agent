@@ -52,6 +52,15 @@ class EvaluateTests(unittest.TestCase):
             'order -> legacy "Declared implementation dependency" "sync"',
         )
 
+    def test_changed_scope_keeps_baseline_realization(self) -> None:
+        graph = graph_with_nodes()
+        graph.add_edge(Edge("hld:order", "hld:legacy", "hld", "ALLOWS", "sync", Evidence("workspace.json")))
+        graph.add_edge(Edge("lld:order", "lld:legacy", "lld", "CALLS", "sync", Evidence("unchanged.ts", 18)))
+
+        findings = evaluate(graph, {"changed.ts"})
+
+        self.assertFalse(any(finding.policy_id == "ARC-PHA-006" for finding in findings))
+
 
 if __name__ == "__main__":
     unittest.main()

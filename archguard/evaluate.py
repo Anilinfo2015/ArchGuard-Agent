@@ -46,9 +46,11 @@ def evaluate(graph: ArchitectureGraph, changed_artifacts: set[str] | None = None
     for edge in graph.edges:
         if edge.tier != "lld" or edge.relation not in {"CALLS", "DEPLOYS_WITH"}:
             continue
+        pair = (_context(graph, edge.source), _context(graph, edge.target))
+        if pair in approved:
+            realized.add(pair)
         if changed_artifacts and edge.evidence.artifact not in changed_artifacts:
             continue
-        pair = (_context(graph, edge.source), _context(graph, edge.target))
         if pair[0] == pair[1]:
             continue
         declared = approved.get(pair)
@@ -60,7 +62,6 @@ def evaluate(graph: ArchitectureGraph, changed_artifacts: set[str] | None = None
                 _evidence(edge), edge,
             ))
             continue
-        realized.add(pair)
         if declared.mode and edge.mode and declared.mode != edge.mode:
             findings.append(Finding(
                 "ARC-COM-003", "block",

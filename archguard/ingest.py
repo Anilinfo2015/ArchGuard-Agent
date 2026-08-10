@@ -93,6 +93,14 @@ def ingest_terraform_plan(plan_file: Path, graph: ArchitectureGraph) -> None:
     data = json.loads(plan_file.read_text())
     resources = data.get("planned_values", {}).get("root_module", {}).get("resources", [])
     addresses = {resource["address"] for resource in resources}
+    configured_references: dict[str, set[str]] = {}
+    for resource in data.get("configuration", {}).get("root_module", {}).get("resources", []):
+        references = {
+            reference
+            for expression in resource.get("expressions", {}).values()
+            for reference in expression.get("references", [])
+        }
+        configured_references[resource["address"]] = references
     for resource in resources:
         address = resource["address"]
         graph.add_node(Node(
@@ -100,11 +108,13 @@ def ingest_terraform_plan(plan_file: Path, graph: ArchitectureGraph) -> None:
             Evidence(str(plan_file), confidence=1.0), address.split(".")[0],
         ))
     for resource in resources:
-        text = json.dumps(resource.get("values", {}))
-        for address in addresses:
-            if address != resource["address"] and address in text:
+        for reference in configured_references.get(resource["address"], set()):
+            address = next(
+                (candidate for candidate in addresses if reference == candidate or reference.startswith(f"{candidate}.")),
+                None,
+            )
+            if address and address != resource["address"]:
                 graph.add_edge(Edge(
                     f"lld:iac:{resource['address']}", f"lld:iac:{address}", "lld",
                     "DEPLOYS_WITH", None, Evidence(str(plan_file), confidence=0.8),
                 ))
-
