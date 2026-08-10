@@ -1,8 +1,8 @@
-# Idea 4: Policy Playground and What-If Simulator
+# Idea 4: Policy Playground and PR Conversation Simulator
 
 ## One-line pitch
 
-A live sandbox where architects and judges type natural-language policies, mutate architecture scenarios, and instantly see which designs pass or fail.
+A live sandbox and PR bot where architects and judges type natural-language policies, mutate architecture scenarios, ask architecture questions, and instantly see which designs pass or fail.
 
 ## Problem
 
@@ -14,7 +14,8 @@ Enterprise architecture policies are often trapped in PDFs or wikis. Teams do no
 - User writes or edits policy text in natural language.
 - User applies a proposed architecture change.
 - ArchGuard AI explains whether the change passes, fails, or needs human review.
-- The output includes policy traceability and suggested wording improvements.
+- In a PR thread, a reviewer can ask questions such as `@archguard what is the blast radius of removing the API gateway?`.
+- The output includes policy traceability, suggested wording improvements, and a small affected-architecture summary or Mermaid subgraph.
 
 ## Demo story
 
@@ -22,7 +23,7 @@ A judge adds a rule live:
 
 > Payment systems must not synchronously depend on customer profile services during checkout.
 
-Then the judge toggles a proposed synchronous dependency. ArchGuard AI immediately flags the violation and recommends an event-backed profile projection.
+Then the judge toggles a proposed synchronous dependency. ArchGuard AI immediately flags the violation and recommends an event-backed profile projection. For a final wow moment, the judge asks a PR-thread question about blast radius and gets an architecture-aware answer.
 
 ## MVP scope
 
@@ -32,10 +33,11 @@ Then the judge toggles a proposed synchronous dependency. ArchGuard AI immediate
   - direct database boundary violation,
   - circular dependency.
 - Use 5 starter policy examples that judges can edit.
+- Support 2 canned PR questions: blast radius and single point of failure.
 
 ## Wow factor
 
-The demo becomes interactive. Judges can create a new rule on the spot and watch the architecture review adapt without a hardcoded rule change.
+The demo becomes interactive. Judges can create a new rule on the spot, ask an architecture question in the PR, and watch the architecture review adapt without a hardcoded rule change.
 
 ## Why judges will care
 

@@ -2,7 +2,7 @@
 
 ## One-line pitch
 
-ArchGuard AI compares intended architecture with infrastructure reality and highlights drift before it becomes an outage or compliance issue.
+ArchGuard AI compares intended C4 architecture with Terraform/Bicep infrastructure reality and highlights drift before it becomes an outage or compliance issue.
 
 ## Problem
 
@@ -11,7 +11,7 @@ Architecture diagrams often say one thing while deployed cloud resources say ano
 ## Proposed experience
 
 - Ingest intended architecture from Structurizr DSL/C4.
-- Ingest deployed topology intent from Terraform or Bicep.
+- Ingest deployed topology intent from Terraform plan JSON or Bicep/ARM JSON.
 - Normalize both into a simple architecture graph.
 - Compare expected relationships with actual infrastructure relationships.
 - Produce a drift report with severity, affected domain, and recommended alignment.
@@ -32,13 +32,13 @@ The architecture model says `Order Service` publishes events to `Inventory Topic
 
 ## Wow factor
 
-Judges see two views side by side: “architecture promise” versus “deployment reality.” The AI explains why the difference matters and which file likely caused it.
+Judges see two views side by side: “architecture promise” versus “deployment reality.” The AI explains why the difference matters and which file likely caused it. This is the most defensible novelty claim because most existing tools validate architecture models or infrastructure separately, not whether the infrastructure implements the approved C4 intent.
 
 ## Why judges will care
 
 - **Impact:** addresses a real enterprise pain: architecture drift.
 - **Feasibility:** starts with IaC files that already exist in mature teams.
-- **Novelty:** combines Architecture as Code, Infrastructure as Code, and AI reasoning.
+- **Novelty:** combines Architecture as Code, Infrastructure as Code, and AI reasoning in a cross-layer drift check.
 - **Demo clarity:** visual drift is easy to show.
 
 ## Risks and mitigations
