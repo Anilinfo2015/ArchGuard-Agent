@@ -12,14 +12,14 @@ Architecture review usually happens too late: in meetings, design docs, or produ
 
 - Developers update Architecture as Code files such as Structurizr DSL, Terraform, or Bicep.
 - A CI job detects architecture-impacting files in the pull request.
-- ArchGuard AI parses the architecture delta and reads `org-guidelines.md`.
+- ArchGuard AI parses the architecture delta and loads the applicable fitness functions: the non-negotiable org tier plus the owning team’s tier, as defined in [Idea 6](./06-team-fitness-functions.md).
 - It posts a PR review with:
   - pass/fail status,
-  - violated policy,
+  - violated policy, quoted in the wording its authors wrote,
   - affected components,
   - risk explanation,
   - suggested remediation.
-- Required checks block the PR only for high-confidence violations.
+- Required checks block the PR only for high-confidence violations. Rules the policy compiler could not express deterministically stay in advisory mode.
 
 ## Demo story
 
@@ -31,7 +31,7 @@ The status check fails, and the PR cannot merge until the architecture is correc
 
 ## MVP scope
 
-- Input: one sample Structurizr DSL file and one natural-language policy file.
+- Input: one sample Structurizr DSL file and a small fitness function set with one org-tier and one team-tier rule.
 - Output: a markdown PR compliance report.
 - Detection focus: direct database access, forbidden synchronous dependency, and circular service relationships.
 - Integration concept: GitHub Actions check plus PR comment.
@@ -50,7 +50,7 @@ The tool does not just say “lint failed.” It explains the architectural risk
 ## Risks and mitigations
 
 - **Risk:** LLM hallucination creates noisy reviews.
-  - **Mitigation:** require structured parsed architecture input and cite exact policy text.
+  - **Mitigation:** require structured parsed architecture input, cite exact policy text, and keep the model out of the gate decision by evaluating policies compiled ahead of time ([Idea 6](./06-team-fitness-functions.md)).
 - **Risk:** teams resist blocked PRs.
   - **Mitigation:** start in advisory mode, then enforce only high-confidence rules.
 - **Risk:** architecture files drift from real systems.
