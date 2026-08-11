@@ -11,8 +11,8 @@ PR-level architecture violations are useful, but leaders also need trend visibil
 ## Proposed experience
 
 - Every architecture review produces structured findings.
-- Findings roll up into a scorecard by domain, service, policy, and severity.
-- When a team intentionally accepts a deviation, ArchGuard AI drafts an Architecture Decision Record (ADR) with context, decision, consequences, and expiry date.
+- Findings roll up into a scorecard by domain, service, policy, and severity, and by owning team: own-rule pass rate, org-rule pass rate, active exceptions with their expiry dates, and recurring violations ([Idea 6](./06-team-fitness-functions.md)).
+- When a team intentionally accepts a deviation, ArchGuard AI drafts an Architecture Decision Record (ADR) with context, decision, consequences, and expiry date. This is also the only sanctioned way to run weaker than an org-tier policy, since team fitness functions may only be stricter.
 - Leaders can see architecture risk burn-down across sprints.
 
 ## Demo story
@@ -44,6 +44,8 @@ The product speaks both developer and executive languages: PR comments for engin
 ## Risks and mitigations
 
 - **Risk:** scorecards can become vanity metrics.
-  - **Mitigation:** focus on actionable counts: blocked high-risk changes, approved exceptions, recurring policy violations.
+  - **Mitigation:** focus on actionable counts: blocked high-risk changes, approved exceptions, recurring policy violations, and per-rule false-positive rate.
 - **Risk:** ADR generation may create documentation noise.
   - **Mitigation:** generate ADRs only for accepted exceptions or high-impact decisions.
+- **Risk:** expired exceptions silently keep a policy relaxed.
+  - **Mitigation:** every exception carries an expiry date, and the scorecard surfaces expired ones as findings in their own right.

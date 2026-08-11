@@ -12,6 +12,7 @@ Enterprise architecture policies are often trapped in PDFs or wikis. Teams do no
 
 - User selects a sample architecture scenario.
 - User writes or edits policy text in natural language.
+- ArchGuard AI compiles the text into a checkable assertion and shows its canonical restatement plus a confidence score, so the user can confirm the interpretation before it is saved. This is the authoring surface for the fitness function model in [Idea 6](./06-team-fitness-functions.md).
 - User applies a proposed architecture change.
 - ArchGuard AI explains whether the change passes, fails, or needs human review.
 - In a PR thread, a reviewer can ask questions such as `@archguard what is the blast radius of removing the API gateway?`.
@@ -49,6 +50,6 @@ The demo becomes interactive. Judges can create a new rule on the spot, ask an a
 ## Risks and mitigations
 
 - **Risk:** natural-language rules are ambiguous.
-  - **Mitigation:** ask the model to classify confidence and request clarification for ambiguous policies.
+  - **Mitigation:** the compiler returns `clarify` with a suggested rewording and a confidence score instead of guessing, and low-confidence rules stay advisory ([Idea 6](./06-team-fitness-functions.md)).
 - **Risk:** judges may type unsupported policies.
-  - **Mitigation:** clearly frame the supported policy categories in the UI.
+  - **Mitigation:** clearly frame the supported policy categories in the UI, and offer the starter catalog as one-click examples.
