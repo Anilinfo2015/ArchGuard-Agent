@@ -249,7 +249,7 @@ archrule("Exception Base Check") \
     .check()
 ```
 
-Two defects in eight lines, both verifiable against the
+Two defects in five lines, both verifiable against the
 [pytest-archon README](https://github.com/jwbargsten/pytest-archon):
 
 1. `should_inherit_from` **does not exist**. pytest-archon is an *import-boundary* tool. Its
@@ -259,17 +259,18 @@ Two defects in eight lines, both verifiable against the
    produced plausible code for a method that was never there.
 2. `.check()` is called with no argument, but it "needs either a module object or a string".
    It would raise at collection time.
-3. Subtler and worse: **pytest-archon checks transitive imports by default.** The intended
-   architecture — `Controller → Service → Repository` — therefore *violates*
-   `should_not_import("*.repositories.*")`. The generated rule fails the very design it was
-   written to protect. Nothing about the code looks wrong; the provider's default semantics are
-   wrong for the sentence.
 
-And even had it run, it would not mean what the sentence means. It matches *modules*, not
-"Controller classes" — a controller elsewhere is missed, and unrelated classes inside a
-controller module are caught. "Must only talk to Service interfaces" is a positive
-whitelist; forbidding two package globs still permits database clients, gateways and arbitrary
-infrastructure classes.
+Its companion rule — "controllers must never import repositories", rendered as
+`.match("*.controllers.*").should_not_import("*.repositories.*")` — is worse, because it does
+run. **pytest-archon checks transitive imports by default**, so the intended architecture
+`Controller → Service → Repository` *violates* it. The generated rule fails the very design it
+was written to protect. Nothing about the code looks wrong; the provider's default semantics are
+wrong for the sentence.
+
+And even then it would not mean what the sentence means. It matches *modules*, not "Controller
+classes" — a controller elsewhere is missed, and unrelated classes inside a controller module are
+caught. "Must only talk to Service interfaces" is a positive whitelist; forbidding two package
+globs still permits database clients, gateways and arbitrary infrastructure classes.
 
 This is not a prompt-quality problem to be tuned away. It is the predictable behaviour of
 free-form code generation against a third-party fluent API, and it is why the **capability

@@ -72,10 +72,11 @@ and worth exactly what it is.
 
 ## 4. The nearest real prior art, and the number that matters
 
-**Prose2Policy (arXiv:2603.15799)** is the closest published work: an LLM pipeline that compiles
-natural-language access-control policy into Rego, with automatically generated test fixtures.
-Reported results: **95.3% compile rate, 82.2% positive-test pass rate, 98.9% negative-test pass
-rate.**
+**Prose2Policy (P2P)** — *"A Practical LLM Pipeline for Translating Natural Language Access
+Control Policies into Rego"*, arXiv:2603.15799 — is the closest published work: an LLM pipeline
+that compiles natural-language access-control policy into Rego, with automatically generated test
+fixtures. Reported results: **95.3% compile rate, 82.2% positive-test pass rate, 98.9%
+negative-test pass rate.**
 
 Different domain — access control, not software architecture — and it does not centre the
 human review of the compiled artifact. But it is the strongest evidence that the mechanism
