@@ -9,6 +9,7 @@ validates what a human already approved in a policy pull request.
 from __future__ import annotations
 
 import json
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -127,7 +128,7 @@ def load_rules(path: Path) -> list[Rule]:
     """Load compiled artifacts from a file or a directory, ordered by rule id."""
     files = sorted(path.glob("**/*.json")) if path.is_dir() else [path]
     rules = [parse_rule(json.loads(file.read_text()), str(file)) for file in files]
-    duplicates = {rule.id for rule in rules if [item.id for item in rules].count(rule.id) > 1}
+    duplicates = {identifier for identifier, count in Counter(rule.id for rule in rules).items() if count > 1}
     if duplicates:
         raise RuleError(f"rule ids are never reused, but these are duplicated: {sorted(duplicates)}")
     return sorted(rules, key=lambda rule: rule.id)

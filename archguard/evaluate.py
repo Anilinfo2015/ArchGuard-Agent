@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import PurePath
-from typing import Iterable
 
 from .model import ArchitectureGraph, Edge
 

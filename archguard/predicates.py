@@ -7,6 +7,7 @@ quietly stops working.
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 from datetime import date
 from fnmatch import fnmatchcase
@@ -116,9 +117,9 @@ def _paths(graph: ArchitectureGraph, edges: list[Edge], sources: set[str], targe
     results: list[list[Edge]] = []
     for start in sorted(sources):
         seen = {start}
-        queue: list[tuple[str, list[Edge]]] = [(start, [])]
+        queue: deque[tuple[str, list[Edge]]] = deque([(start, [])])
         while queue:
-            current, trail = queue.pop(0)
+            current, trail = queue.popleft()
             if trail and current in targets:
                 results.append(trail)
                 break
