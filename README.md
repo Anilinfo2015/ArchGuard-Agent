@@ -30,3 +30,13 @@ python -m archguard.cli --structurizr build/workspace.json \
 The command writes `archguard-results.json` and exits non-zero only for blocking
 findings. Use `action.yml` from a GitHub Actions workflow to run the same check;
 provide its required `changed-files` input as a newline-separated PR file list.
+
+## Where this is going
+
+This CLI is the first evaluator of a larger product. See
+[`idea/00-final-idea.md`](./idea/00-final-idea.md) for the finalized scope: two policy
+packs over one multilevel architecture graph — **Design Rules** for low-level design
+such as SOLID, layering and dependency inversion, and **Fitness Functions** for
+high-level architecture at org, domain, team and service scope — where an LLM compiles
+plain-English rules into deterministic predicates at authoring time and never
+participates in the gate decision.
