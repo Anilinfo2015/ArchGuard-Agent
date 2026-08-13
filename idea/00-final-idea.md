@@ -259,6 +259,17 @@ Two defects in eight lines, both verifiable against the
    produced plausible code for a method that was never there.
 2. `.check()` is called with no argument, but it "needs either a module object or a string".
    It would raise at collection time.
+3. Subtler and worse: **pytest-archon checks transitive imports by default.** The intended
+   architecture — `Controller → Service → Repository` — therefore *violates*
+   `should_not_import("*.repositories.*")`. The generated rule fails the very design it was
+   written to protect. Nothing about the code looks wrong; the provider's default semantics are
+   wrong for the sentence.
+
+And even had it run, it would not mean what the sentence means. It matches *modules*, not
+"Controller classes" — a controller elsewhere is missed, and unrelated classes inside a
+controller module are caught. "Must only talk to Service interfaces" is a positive
+whitelist; forbidding two package globs still permits database clients, gateways and arbitrary
+infrastructure classes.
 
 This is not a prompt-quality problem to be tuned away. It is the predictable behaviour of
 free-form code generation against a third-party fluent API, and it is why the **capability
@@ -317,6 +328,18 @@ flowchart LR
 Rendered output is a **build artifact, not a reviewed artifact**: regenerable, ignorable in
 review, and never the source of truth. If the renderer has a bug, it is fixed once, with a test,
 for every rule — rather than being re-hallucinated per rule.
+
+Three constraints keep this honest:
+
+- **No escape hatch.** pytest-archon exposes `should(predicate)` and ArchUnit exposes custom
+  `ArchCondition`. Both are arbitrary code. Neither is ever a compilation target, because one
+  escape hatch reopens every problem above.
+- **Renderers encode operands as data.** Naive string interpolation into a template recreates
+  injection at the last step.
+- **Fixtures are a correlated oracle.** Predicate and fixtures come from the same model in the
+  same pass, so the same misreading can appear in both and the tests will happily agree with the
+  bug. Generated fixtures raise confidence; they do not establish correctness, and the human
+  review step is what actually catches a plausible-but-wrong compilation.
 
 This is not an exotic design. [import-linter](https://github.com/seddonym/import-linter) already
 proves declarative architecture contracts work: `type = forbidden`, `source_modules`,
@@ -622,6 +645,36 @@ governance/
 `CODEOWNERS` maps each directory to its owner, so a team structurally cannot edit another team's
 rules or the org tier.
 
+### Five verdicts, and the move that defeats every gate
+
+A gate that answers only pass or fail will lie. Missing topology, an unsupported language, a
+parser crash, a selector that matches nothing — each is a *failure to know*, and each becomes a
+silent pass under a binary verdict. Every rule therefore resolves to one of five:
+
+| Verdict | Meaning | Gate behaviour |
+|---|---|---|
+| `PASS` | Evaluated; no violation | Proceed |
+| `FAIL` | Evaluated; violation found | Blocks at T0–T1 |
+| `UNKNOWN` | Not decidable on available evidence | Never a pass; surfaces, and blocks only where the rule declares it must |
+| `ERROR` | Provider, parse or binding failure | Blocks the check itself; never silently green |
+| `SKIPPED` | Out of scope, superseded, or covered by a live exception | Reported with the reason |
+
+A selector matching zero elements is `UNKNOWN`, never `PASS`. Vacuous truth is the most common
+way an architecture gate quietly stops working.
+
+**The self-approval hole.** Rules bind to declarations — stereotypes, layer membership, service
+tags, bounded-context assignment. If a developer can change code *and* its classification in the
+same pull request, the cheapest way past any rule is to relabel: move the class out of
+`controllers`, drop the `web-service` tag, redraw the edge. The gate goes green and the
+architecture is worse.
+
+Declarations are therefore governed inputs, not developer-editable code. `architecture/` and
+`design/` are owned separately from implementation; a change to them is a policy change that
+routes to the architecture owner even when it arrives in a feature pull request. Every
+classification change is diffed and reported — a pull request that removes a stereotype and the
+finding attached to it is exactly the event a reviewer needs to see, and is reported as a
+governance event rather than an absence.
+
 ## Reports
 
 | Report | Audience | Contents |
@@ -693,7 +746,9 @@ as an evaluated verdict.
 | Teams contradict the org tier | Conjunctive inheritance; supersession only within a formally ordered family; everything else routed as an unprovable override; scope narrowing counts as an exception |
 | A noisy rule destroys trust in the gate | False-positive rate is a first-class metric, and demotion is a proposed, human-merged pull request rather than an automatic relaxation |
 | Over-claiming that architecture review is automated | The explicit holistic and judgement type, routed to the ARB with a prepared packet |
-| **Name collision with the existing open-source ArchGuard project** | Acknowledged; a distinct name should be chosen before public release, and the prior art credited rather than obscured |
+| **A developer relabels their way past a rule** | Declarations are governed inputs owned separately from implementation; every classification change is diffed and reported as a governance event |
+| **Compilation fidelity is below what architects will trust** | The nearest published work reports a 82.2% positive-test pass rate in a narrower domain; review, fixtures, `UNKNOWN` and refusal are load-bearing, and fidelity is never claimed as solved |
+| **Name collision** with the established open-source ArchGuard project **and with a live "ArchGuard AI Reviewer" Marketplace action** | Rename before public release; credit the prior art rather than obscure it. See [Idea 9](./09-prior-art-and-positioning.md) |
 
 ## Success metrics
 
@@ -713,3 +768,5 @@ ARB pull-request reviews · rules overdue for `review_by`.
    how the scope resolver keys rules.
 4. **Advisory-first or gating from day one** for Pack 1.
 5. **Where reports live:** the pull-request check only, or also a cross-repository dashboard.
+6. **The name.** Two projects already ship under it, one of them an AI architecture reviewer on
+   the GitHub Marketplace. This is now a decision with a deadline, not an open question.

@@ -8,7 +8,7 @@ This folder is intentionally documentation-only. It captures product ideas, demo
 
 **[The Final Idea](./00-final-idea.md) is the decided scope**, with architecture diagrams. It settles the product into two policy packs over one multilevel graph — **Design Rules** for low-level design such as SOLID, layering and dependency inversion, and **Fitness Functions** for high-level architecture defined at org, domain, team and service scope — plus the guardrail that keeps the tool architectural instead of becoming CodeQL.
 
-Ideas 1 to 7 below remain valid as detail and demo material; idea 0 decides what the product *is*, and [Idea 8](./08-vs-ai-review-agents.md) answers the inevitable "how is this different from a review skill or an AI review agent?"
+Ideas 1 to 7 below remain valid as detail and demo material; idea 0 decides what the product *is*, [Idea 8](./08-vs-ai-review-agents.md) answers the inevitable "how is this different from a review skill or an AI review agent?", and [Idea 9](./09-prior-art-and-positioning.md) checks the whole thing against what already exists — including a tool already shipping under this name.
 
 ## Research signals
 
@@ -70,6 +70,7 @@ The most compelling demo is:
 | 6 | [Per-Team Fitness Functions in Natural Language](./06-team-fitness-functions.md) | Scale and credibility | Team-owned policy in plain English, compiled once and enforced deterministically. |
 | 7 | [Threat Model Bridge](./07-threat-model-bridge.md) | Objection handling | Turns the mandated security process from a competitor into an input. |
 | 8 | [Versus AI Review Agents](./08-vs-ai-review-agents.md) | Objection handling | Answers "isn't this just a Claude skill?" with compilation, not adjectives. |
+| 9 | [Prior Art and Positioning](./09-prior-art-and-positioning.md) | Competitive reality | What already exists, the name collision, the one defensible claim, and the cut list. |
 
 ## Suggested hackathon build sequence
 
