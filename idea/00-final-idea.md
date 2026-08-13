@@ -228,7 +228,127 @@ generated code and runtime wiring are invisible to static providers. So high con
 positive finding does not license high confidence in an absence, and the declared-but-unrealized
 check is therefore informational only, never a gate.
 
-## What may gate, and what may not
+## The execution model: two stages, not one
+
+The natural first design is: **English → LLM → executable test code (ArchUnit, ArchUnitNET,
+pytest-archon) → run it with `pytest` or `mvn test` → gate**, with the generated code committed
+back to the repository and regenerated only when the rules file changes.
+
+That instinct is right about the three things that matter — **compile only when the rules
+change, commit the artifact, and let mature deterministic runners do the evaluation**. It is
+wrong about one thing: what the LLM should emit.
+
+### Why generating test code directly does not survive review
+
+**It does not actually run.** Consider the canonical illustration of the approach:
+
+```python
+archrule("Exception Base Check") \
+    .match("*.exceptions.*") \
+    .should_inherit_from("*.BaseApplicationException") \
+    .check()
+```
+
+Two defects in eight lines, both verifiable against the
+[pytest-archon README](https://github.com/jwbargsten/pytest-archon):
+
+1. `should_inherit_from` **does not exist**. pytest-archon is an *import-boundary* tool. Its
+   entire vocabulary is `match`, `exclude`, `should_import`, `should_not_import`, `may_import`
+   and `should(predicate)`. Inheritance is not expressible at all, so this rule cannot be
+   enforced by this provider. ArchUnit *can* express it. The model does not know that, and it
+   produced plausible code for a method that was never there.
+2. `.check()` is called with no argument, but it "needs either a module object or a string".
+   It would raise at collection time.
+
+This is not a prompt-quality problem to be tuned away. It is the predictable behaviour of
+free-form code generation against a third-party fluent API, and it is why the **capability
+matrix must be per provider** rather than per rule family.
+
+**It is a code-execution vector.** The pipeline would commit model-generated code and then
+execute it in CI with repository credentials. The rules file, the source code and the topology
+file are all untrusted inputs to the generator, so prompt injection anywhere in that surface
+becomes code execution in the build. Mitigations exist; removing the class of problem is
+better.
+
+**It destroys the anti-CodeQL guardrail.** The whole scope discipline rests on a closed
+vocabulary. Free-form Python or Java can express anything — a lint, a secret scanner, a network
+call — so the guardrail evaporates the moment arbitrary code generation is allowed.
+
+**It only looks auditable.** Determinism comes from a human approving the artifact, and nobody
+reliably verifies that 40 lines of generated Java faithfully encode one English sentence.
+Committing generated imperative code produces the *appearance* of auditability while making the
+review harder.
+
+### The correction: compile to a declarative predicate, render deterministically
+
+Split the single translation step in two. The model does the hard part — understanding intent.
+Ordinary code we write and test does the mechanical part — emitting runner syntax.
+
+```mermaid
+flowchart LR
+    EN["English rule<br/>rules.md"] --> LLM["Compiler agent<br/>LLM, authoring time only"]
+    LLM --> PRED["Declarative predicate<br/>closed vocabulary, 5-10 lines"]
+    LLM --> FIX["Generated pass/fail fixtures"]
+    PRED --> REV["Human review<br/>policy pull request diff"]
+    FIX --> REV
+    REV --> COMMIT["Committed artifact<br/>+ pinned dependency set"]
+    COMMIT --> REN["Renderer<br/>deterministic, hand-written, unit-tested"]
+    REN --> B1["ArchUnit / ArchUnitNET"]
+    REN --> B2["pytest-archon / import-linter"]
+    REN --> B3["JSON topology matcher"]
+    B1 --> RUN["Standard runners<br/>mvn test, pytest"]
+    B2 --> RUN
+    B3 --> RUN
+    RUN --> GATE["Pass / fail gate"]
+```
+
+- The English rule is compiled by the agent at authoring time only, when `rules.md` changes.
+- The agent emits a **declarative predicate** in the closed vocabulary, plus pass and fail
+  fixtures.
+- A human reviews both as a diff in a policy pull request — five to ten reviewable lines, not
+  forty lines of generated Java.
+- The approved artifact is committed with its pinned dependency set.
+- A **renderer that we write, test and version** — not a model — translates the predicate into
+  the native syntax of whichever provider can actually evaluate it.
+- Standard runners execute it: ArchUnit or ArchUnitNET for JVM and .NET, pytest-archon or
+  import-linter for Python, a JSON matcher for topology and infrastructure plans.
+- The runner's verdict is the gate.
+
+Rendered output is a **build artifact, not a reviewed artifact**: regenerable, ignorable in
+review, and never the source of truth. If the renderer has a bug, it is fixed once, with a test,
+for every rule — rather than being re-hallucinated per rule.
+
+This is not an exotic design. [import-linter](https://github.com/seddonym/import-linter) already
+proves declarative architecture contracts work: `type = forbidden`, `source_modules`,
+`forbidden_modules` in a config file, no generated code anywhere. The contribution here is
+compiling English into that shape, and reviewing the compilation.
+
+### What the two-stage model keeps and what it costs
+
+**Keeps** every benefit of the original instinct: mature runners do the evaluation, real source
+code is scanned, no model runs at gate time, CI is fast and cheap, and the artifact is committed
+and diffable.
+
+**Costs** expressiveness. Anything outside the vocabulary cannot be compiled — which is
+precisely the intended constraint, and why `clarify`, advisory routing and the human
+classification step exist as escape hatches. The vocabulary must then grow deliberately, through
+a reviewed change to the renderer, with the fixtures that come with it.
+
+### Caching, stated correctly
+
+"Recompile only when the rules file changes" is the right instinct but the wrong trigger. The
+compiled predicate binds to package structure, declared stereotypes, framework conventions and
+the topology file — so the rules file can be untouched while the artifact silently becomes
+wrong. A rename from `repositories` to `persistence` leaves `should_not_import("*.repositories.*")`
+matching nothing and passing forever.
+
+The correct trigger is the **pinned dependency set**: rule text, primitive semantics, graph
+schema, declaration bindings and provider capabilities. Any change to those revalidates the
+rule; a change that could alter meaning sends it back for approval. Combined with `UNKNOWN`
+verdicts and coverage assertions, this is what makes "the same codebase never randomly passes or
+fails" actually true rather than merely intended.
+
+
 
 The most common way a governance tool loses credibility is claiming to prove something its
 evidence cannot support. So the primitive-to-evidence relationship is published as a capability
