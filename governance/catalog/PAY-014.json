@@ -1,0 +1,51 @@
+{
+  "id": "PAY-014",
+  "title": "Checkout must not synchronously depend on customer profile",
+  "tier": "team",
+  "owner": "payments",
+  "scope": ["tag:payments"],
+  "type": "structural",
+  "severity": "high",
+  "mode": "blocking",
+  "evidence": "architecture-model",
+  "review_by": "2027-12-31",
+  "body": "During checkout, payment systems must not make a synchronous call to any customer profile service. Profile data needed at checkout must come from a locally owned projection kept up to date by events.",
+  "restatement": "No element tagged payments may hold a synchronous dependency on an element tagged customer-profile.",
+  "predicate": {
+    "primitive": "may-not-depend-on",
+    "source": ["tag:payments"],
+    "target": ["tag:customer-profile"],
+    "mode": "sync"
+  },
+  "pinned": {
+    "primitive-semantics": "1",
+    "graph-schema": "1",
+    "evidence-provider": "structurizr-cli-json"
+  },
+  "fixtures": [
+    {
+      "name": "checkout reads its own projection",
+      "expect": "PASS",
+      "nodes": [
+        {"id": "checkout", "name": "Checkout API", "kind": "container", "tags": ["payments"]},
+        {"id": "projection", "name": "Profile Projection", "kind": "container", "tags": ["payments"]},
+        {"id": "profile", "name": "Customer Profile", "kind": "container", "tags": ["customer-profile"]}
+      ],
+      "edges": [
+        {"source": "checkout", "target": "projection", "relation": "ALLOWS", "mode": "sync", "artifact": "workspace.json"},
+        {"source": "projection", "target": "profile", "relation": "ALLOWS", "mode": "async", "artifact": "workspace.json"}
+      ]
+    },
+    {
+      "name": "checkout calls the profile service directly over HTTP",
+      "expect": "FAIL",
+      "nodes": [
+        {"id": "checkout", "name": "Checkout API", "kind": "container", "tags": ["payments"]},
+        {"id": "profile", "name": "Customer Profile", "kind": "container", "tags": ["customer-profile"]}
+      ],
+      "edges": [
+        {"source": "checkout", "target": "profile", "relation": "ALLOWS", "mode": "sync", "artifact": "workspace.json", "line": 42}
+      ]
+    }
+  ]
+}

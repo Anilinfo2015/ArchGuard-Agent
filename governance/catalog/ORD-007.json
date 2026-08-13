@@ -1,0 +1,63 @@
+{
+  "id": "ORD-007",
+  "title": "An ordering service may depend on at most four other services",
+  "tier": "service",
+  "owner": "ordering",
+  "scope": ["tag:ordering"],
+  "type": "structural",
+  "severity": "medium",
+  "mode": "advisory",
+  "evidence": "architecture-model",
+  "review_by": "2027-03-31",
+  "body": "A service in the ordering domain should not depend on more than four other services. Beyond that the service is doing too many things and every release becomes a coordination exercise.",
+  "restatement": "Fan-out of any element tagged ordering must not exceed 4. This is a named proxy for single responsibility, not proof of it.",
+  "predicate": {
+    "primitive": "must-not-exceed",
+    "selector": ["tag:ordering"],
+    "metric": "fan-out",
+    "budget": 4
+  },
+  "pinned": {
+    "primitive-semantics": "1",
+    "graph-schema": "1",
+    "evidence-provider": "structurizr-cli-json"
+  },
+  "fixtures": [
+    {
+      "name": "ordering depends on four services",
+      "expect": "PASS",
+      "nodes": [
+        {"id": "orders", "name": "Order API", "kind": "container", "tags": ["ordering"]},
+        {"id": "a", "name": "Pricing", "kind": "container"},
+        {"id": "b", "name": "Inventory", "kind": "container"},
+        {"id": "c", "name": "Shipping", "kind": "container"},
+        {"id": "d", "name": "Notifications", "kind": "container"}
+      ],
+      "edges": [
+        {"source": "orders", "target": "a", "relation": "ALLOWS", "artifact": "workspace.json"},
+        {"source": "orders", "target": "b", "relation": "ALLOWS", "artifact": "workspace.json"},
+        {"source": "orders", "target": "c", "relation": "ALLOWS", "artifact": "workspace.json"},
+        {"source": "orders", "target": "d", "relation": "ALLOWS", "artifact": "workspace.json"}
+      ]
+    },
+    {
+      "name": "ordering depends on five services",
+      "expect": "FAIL",
+      "nodes": [
+        {"id": "orders", "name": "Order API", "kind": "container", "tags": ["ordering"]},
+        {"id": "a", "name": "Pricing", "kind": "container"},
+        {"id": "b", "name": "Inventory", "kind": "container"},
+        {"id": "c", "name": "Shipping", "kind": "container"},
+        {"id": "d", "name": "Notifications", "kind": "container"},
+        {"id": "e", "name": "Fraud", "kind": "container"}
+      ],
+      "edges": [
+        {"source": "orders", "target": "a", "relation": "ALLOWS", "artifact": "workspace.json"},
+        {"source": "orders", "target": "b", "relation": "ALLOWS", "artifact": "workspace.json"},
+        {"source": "orders", "target": "c", "relation": "ALLOWS", "artifact": "workspace.json"},
+        {"source": "orders", "target": "d", "relation": "ALLOWS", "artifact": "workspace.json"},
+        {"source": "orders", "target": "e", "relation": "ALLOWS", "artifact": "workspace.json"}
+      ]
+    }
+  ]
+}

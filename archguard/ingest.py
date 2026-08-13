@@ -7,6 +7,10 @@ from typing import Any, Iterable
 
 from .model import ArchitectureGraph, Edge, Evidence, Node
 
+ARCHITECTURE_MODEL = "architecture-model"
+IMPLEMENTATION = "implementation"
+INFRASTRUCTURE_PLAN = "infrastructure-plan"
+
 
 def _mode(value: str | None) -> str | None:
     value = (value or "").lower()
@@ -17,13 +21,23 @@ def _mode(value: str | None) -> str | None:
     return None
 
 
-def _elements(model: dict[str, Any]) -> Iterable[dict[str, Any]]:
-    for collection in ("people", "softwareSystems", "deploymentNodes"):
-        yield from model.get(collection, [])
+def _elements(model: dict[str, Any]) -> Iterable[tuple[str, dict[str, Any]]]:
+    """Yield each model element with the C4 kind implied by where it is declared."""
+    for kind, collection in (("person", "people"), ("software-system", "softwareSystems"),
+                             ("deployment-node", "deploymentNodes")):
+        for element in model.get(collection, []):
+            yield kind, element
     for system in model.get("softwareSystems", []):
-        yield from system.get("containers", [])
         for container in system.get("containers", []):
-            yield from container.get("components", [])
+            yield "container", container
+            for component in container.get("components", []):
+                yield "component", component
+
+
+def _tags(element: dict[str, Any]) -> tuple[str, ...]:
+    raw = element.get("tags", "")
+    values = raw.split(",") if isinstance(raw, str) else list(raw)
+    return tuple(tag.strip() for tag in values if tag and tag.strip())
 
 
 def ingest_structurizr(export_file: Path, graph: ArchitectureGraph) -> None:
@@ -31,14 +45,15 @@ def ingest_structurizr(export_file: Path, graph: ArchitectureGraph) -> None:
     data = json.loads(export_file.read_text())
     model = data.get("model", data)
     elements = list(_elements(model))
-    for element in elements:
+    graph.sources.add(ARCHITECTURE_MODEL)
+    for kind, element in elements:
         identifier = str(element["id"])
         graph.add_node(Node(
             id=f"hld:{identifier}", name=element.get("name", identifier), tier="hld",
-            kind=element.get("type", "element"), context=element.get("name"),
-            evidence=Evidence(str(export_file), confidence=1.0),
+            kind=element.get("type", kind), context=element.get("name"),
+            evidence=Evidence(str(export_file), confidence=1.0), tags=_tags(element),
         ))
-    for element in elements:
+    for _, element in elements:
         for relationship in element.get("relationships", []):
             target = str(relationship.get("destinationId", ""))
             source = f"hld:{element['id']}"
@@ -66,6 +81,7 @@ def _line_for_import(path: Path, target: str) -> int | None:
 def ingest_dependency_cruiser(report_file: Path, graph: ArchitectureGraph) -> None:
     """Ingest JSON produced by `dependency-cruiser --output-type json`."""
     report = json.loads(report_file.read_text())
+    graph.sources.add(IMPLEMENTATION)
     for module in report.get("modules", []):
         source = Path(module["source"])
         node_id = f"lld:module:{module['source']}"
@@ -91,6 +107,7 @@ def ingest_dependency_cruiser(report_file: Path, graph: ArchitectureGraph) -> No
 def ingest_terraform_plan(plan_file: Path, graph: ArchitectureGraph) -> None:
     """Ingest an evidence-bearing Terraform plan JSON (`terraform show -json`)."""
     data = json.loads(plan_file.read_text())
+    graph.sources.add(INFRASTRUCTURE_PLAN)
     resources = data.get("planned_values", {}).get("root_module", {}).get("resources", [])
     addresses = {resource["address"] for resource in resources}
     configured_references: dict[str, set[str]] = {}

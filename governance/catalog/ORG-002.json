@@ -1,0 +1,52 @@
+{
+  "id": "ORG-002",
+  "title": "The domain layer may not reach the legacy platform except through the anti-corruption layer",
+  "tier": "org",
+  "owner": "architecture-review-board",
+  "scope": ["path:src/domain/*"],
+  "type": "structural",
+  "severity": "high",
+  "mode": "blocking",
+  "evidence": "implementation",
+  "review_by": "2027-06-30",
+  "body": "Domain code must never import the legacy platform directly. Every interaction with the legacy platform goes through the anti-corruption layer, so the legacy data model cannot leak into the domain.",
+  "restatement": "No module under src/domain may import a module under src/legacy unless the import target is the anti-corruption layer.",
+  "predicate": {
+    "primitive": "must-cross-via",
+    "source": ["path:src/domain/*"],
+    "target": ["path:src/legacy/*"],
+    "via": ["path:src/legacy/acl.ts"]
+  },
+  "pinned": {
+    "primitive-semantics": "1",
+    "graph-schema": "1",
+    "evidence-provider": "dependency-cruiser-json"
+  },
+  "fixtures": [
+    {
+      "name": "domain reaches legacy through the anti-corruption layer",
+      "expect": "PASS",
+      "nodes": [
+        {"id": "order", "name": "src/domain/order.ts", "tier": "lld", "kind": "module"},
+        {"id": "acl", "name": "src/legacy/acl.ts", "tier": "lld", "kind": "module"},
+        {"id": "billing", "name": "src/legacy/billing.ts", "tier": "lld", "kind": "module"}
+      ],
+      "edges": [
+        {"source": "order", "target": "acl", "tier": "lld", "relation": "CALLS", "mode": "sync", "artifact": "src/domain/order.ts", "line": 3},
+        {"source": "acl", "target": "billing", "tier": "lld", "relation": "CALLS", "mode": "sync", "artifact": "src/legacy/acl.ts", "line": 5}
+      ]
+    },
+    {
+      "name": "domain imports the legacy billing module directly",
+      "expect": "FAIL",
+      "nodes": [
+        {"id": "order", "name": "src/domain/order.ts", "tier": "lld", "kind": "module"},
+        {"id": "acl", "name": "src/legacy/acl.ts", "tier": "lld", "kind": "module"},
+        {"id": "billing", "name": "src/legacy/billing.ts", "tier": "lld", "kind": "module"}
+      ],
+      "edges": [
+        {"source": "order", "target": "billing", "tier": "lld", "relation": "CALLS", "mode": "sync", "artifact": "src/domain/order.ts", "line": 7}
+      ]
+    }
+  ]
+}

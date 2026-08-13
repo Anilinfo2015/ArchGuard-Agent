@@ -32,12 +32,6 @@ def _approved(graph: ArchitectureGraph) -> dict[tuple[str, str], Edge]:
     }
 
 
-def _evidence(edge: Edge) -> str:
-    if edge.evidence.line is None:
-        return edge.evidence.artifact
-    return f"{edge.evidence.artifact}:{edge.evidence.line}"
-
-
 def evaluate(graph: ArchitectureGraph, changed_artifacts: set[str] | None = None) -> list[Finding]:
     """Deterministically evaluate parser-derived facts; never infer edges."""
     findings: list[Finding] = []
@@ -59,21 +53,21 @@ def evaluate(graph: ArchitectureGraph, changed_artifacts: set[str] | None = None
             findings.append(Finding(
                 "ARC-DEP-002", severity,
                 f"Undeclared cross-context dependency: {pair[0]} → {pair[1]}.",
-                _evidence(edge), edge,
+                edge.evidence.location, edge,
             ))
             continue
         if declared.mode and edge.mode and declared.mode != edge.mode:
             findings.append(Finding(
                 "ARC-COM-003", "block",
                 f"Communication mode is {edge.mode}; declared architecture requires {declared.mode}.",
-                _evidence(edge), edge,
+                edge.evidence.location, edge,
             ))
     for pair, declared in approved.items():
         if pair not in realized:
             findings.append(Finding(
                 "ARC-PHA-006", "inform",
                 f"Declared relationship {pair[0]} → {pair[1]} has no implementation evidence.",
-                _evidence(declared), declared,
+                declared.evidence.location, declared,
             ))
     return findings
 

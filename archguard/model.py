@@ -9,6 +9,10 @@ class Evidence:
     line: int | None = None
     confidence: float = 1.0
 
+    @property
+    def location(self) -> str:
+        return self.artifact if self.line is None else f"{self.artifact}:{self.line}"
+
 
 @dataclass(frozen=True)
 class Node:
@@ -18,6 +22,7 @@ class Node:
     kind: str
     evidence: Evidence
     context: str | None = None
+    tags: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -37,6 +42,7 @@ class ArchitectureGraph:
     def __init__(self) -> None:
         self.nodes: dict[str, Node] = {}
         self.edges: list[Edge] = []
+        self.sources: set[str] = set()
 
     def add_node(self, node: Node) -> None:
         self.nodes[node.id] = node
@@ -50,5 +56,6 @@ class ArchitectureGraph:
         result = ArchitectureGraph()
         result.nodes = self.nodes.copy()
         result.edges = self.edges.copy()
+        result.sources = self.sources.copy()
         return result
 
