@@ -37,7 +37,7 @@ provide its required `changed-files` input as a newline-separated PR file list.
 
 This CLI is the first evaluator of a larger product. See
 [`idea/00-final-idea.md`](./idea/00-final-idea.md) for the finalized scope. The product leads with
-a failure mode no existing tool checks: **architecture does not die from violations, it dies from
+a failure mode no shipped tool checks: **architecture does not die from violations, it dies from
 additions every reviewer approved** — the team that stands up a new first-party application for
 every feature instead of reusing the one it already owns.
 

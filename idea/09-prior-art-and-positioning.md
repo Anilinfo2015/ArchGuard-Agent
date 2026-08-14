@@ -64,13 +64,13 @@ That is the argument, delivered by a competitor rather than by us.
 | Space | Who owns it | Verdict |
 |---|---|---|
 | Architecture rules as code | ArchUnit, ArchUnitNET, ts-arch, NetArchTest, Konsist, PHPat, deptrac, import-linter, dependency-cruiser | **Solved.** Mature and trusted. Rules must be written in code by someone who knows the API — and every one of them is repository-scoped and dependency-shaped |
-| Inventories of what the organization owns | Backstage, service catalogs, CMDBs, cloud resource graphs | **Solved, and inert.** They record the fortieth application; none of them can stop the fortieth pull request |
+| Inventories of what the organization owns | Backstage, service catalogs, CMDBs, cloud resource graphs | **Solved, and inert.** They record the fortieth application. Backstage exposes a Catalog API a check could call, but none of them ships a gate |
 | AI pull-request review with a prose rule file | `archguard-labs/action`, CodeRabbit custom instructions, Cursor rule packs | **Crowded.** All re-run the model per pull request |
 | C4 as code, visualisation | Structurizr, ArchGuard workbench | **Solved.** No enforcement |
 | Terraform drift against live infrastructure | Terraform Cloud, Spacelift, env0 | **Solved.** Wrong kind of drift |
 | Fitness functions as a concept | *Building Evolutionary Architectures*, ArchGuard | **Established.** Not novel to claim |
 | Declared C4 model versus planned IaC topology | — | **Unoccupied** |
-| **Org-wide cardinality and reuse of shared platform assets, gated on a pull request** | — | **Unoccupied.** The catalogs that know what exists cannot gate; the gates that can block cannot see past one repository. Assemblable from parts today; shipped by nobody |
+| **Org-wide cardinality and reuse of shared platform assets, gated on a pull request** | — | **Unoccupied.** The catalogs that know what exists ship no gate; the gates that can block ship no view past one repository. Assemblable from parts today; shipped by nobody |
 | English compiled once into a reviewed, versioned architecture predicate | — | **Unoccupied in this domain** |
 
 Two things to take from the table. First, **do not claim to have invented fitness functions,
@@ -120,7 +120,7 @@ holds only half of what the check requires.
 
 Stated more bluntly, for a judge: **everyone else asks the model on every pull request. We ask it
 once, make a human sign the answer, and then never ask again — and the question we ask is one no
-shipped tool asks at all.**
+shipped product asks at all.**
 
 ### Why "they could just add it" is a fair question with a real answer
 
@@ -160,8 +160,8 @@ directions: the C4-versus-IaC drift capability was the most novel, the design-le
 demonstrable, and the demo had to choose. **The proliferation wedge removes that trade-off**,
 which is the strongest single argument for leading with it.
 
-- **Most novel:** org-wide asset cardinality gated on a pull request. Nothing occupies it, and
-  section 5 explains why nothing can occupy it cheaply.
+- **Most novel:** org-wide asset cardinality gated on a pull request. No product occupies it, and
+  section 5 explains why the parts have never been assembled.
 - **Most demonstrable:** the same thing. It needs one chart, one English sentence, and one pull
   request that adds an application registration. No C4 literacy required, no mental model of two
   file formats, no jargon.
@@ -186,8 +186,7 @@ roadmap. A demo that gestures at all of it will land nothing.
    twenty-four months. One English sentence forbidding the forty-first. One pull request that
    adds an application registration, blocked — with the sentence quoted back, `file:line`
    evidence in both the infrastructure plan and the service configuration, the name of the
-   application it should have reused, and the carrying cost it just committed the organization
-   to.
+   application it should have reused, and the annual effort exposure it just took on.
 2. The compilation agent: restatement, predicate, generated fixtures, self-critique, and the
    clarifying question it asks instead of guessing — *do development-tenant registrations count?*
 3. The policy pull request: a human approving a five-line predicate.

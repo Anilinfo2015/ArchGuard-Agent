@@ -56,8 +56,9 @@ Name it explicitly, because it is a discipline engineers already trust.
 - **The test suite:** generated pass and fail fixtures, so an ambiguous sentence is caught the
   day it is written rather than months later on someone's live pull request.
 - **The output:** a versioned artifact, not an ephemeral inference.
-- **The escape hatch:** anything that will not compile returns `clarify`, or stays advisory. It
-  never blocks.
+- **The escape hatch:** anything that will not compile returns `clarify` or is refused. It never
+  blocks — and, per [Idea 0](./00-final-idea.md), it is routed as a human-review task rather than
+  presented as an evaluated advisory verdict, because there is no predicate to execute.
 
 We compile for the reasons we always compile: repeatability, auditability, cost, and the
 ability to **test the output before shipping it**.
@@ -81,8 +82,8 @@ express, and are very good at *explaining*.
 
 So ArchGuard uses a model for exactly those jobs — **authoring** (compiling the prose),
 **explanation** (why this violation matters), **remediation** (the design move that fixes it),
-and the **advisory lane** for anything that did not compile. It is removed from the one place
-it must never be: the gate decision.
+and **routing to human review** for anything that did not compile. It is removed from the one
+place it must never be: the gate decision.
 
 They are complementary. The authoring and playground experience can itself ship as a skill or a
 Copilot extension:

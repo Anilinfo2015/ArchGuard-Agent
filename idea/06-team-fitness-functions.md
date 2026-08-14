@@ -80,7 +80,7 @@ Being explicit about type prevents the classic failure where a team writes an op
 
 An operational rule with no metric binding is rejected at authoring time with an explanation, rather than silently passing forever.
 
-[Idea 7](./07-threat-model-bridge.md) adds a fourth type, **threat model staleness**, evaluated against trust boundaries imported from the organization’s existing threat model.
+[Idea 7](./07-threat-model-bridge.md) adds **threat model staleness**, evaluated against trust boundaries imported from the organization’s existing threat model. [Idea 0](./00-final-idea.md) settles the full list at seven types.
 
 ## The key mechanism: compile natural language into checkable intent, once
 
@@ -100,7 +100,7 @@ An operational rule with no metric binding is rejected at authoring time with an
 4. At pull-request time the evaluator is deterministic: it replays the compiled predicate over the graph. Same input, same verdict, every time, with the traversal path as evidence.
 5. The PR comment still quotes the team’s original prose, so governance still *reads* as natural language even though enforcement is mechanical.
 
-Anything the compiler cannot express in the primitive set is confidence-flagged and lands in **advisory mode only**. It appears as a comment for a human to judge; it never becomes a merge blocker.
+Anything the compiler cannot express in the primitive set is refused with an explanation. It is routed to a human as a review task and never becomes a merge blocker. (Revised: an earlier draft had it "land in advisory mode", which [Idea 0](./00-final-idea.md) corrects — there is no predicate to execute, so presenting it as an evaluated advisory verdict would be a fiction.)
 
 This is also the honest answer to “how do you stop the LLM hallucinating a blocked PR?” — at enforcement time there is no LLM in the decision path.
 

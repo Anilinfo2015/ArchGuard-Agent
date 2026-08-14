@@ -2,7 +2,7 @@
 
 Goal: shape **ArchGuard AI** into a hackathon-winning demo: an automated Architecture Review Board that runs inside CI/CD, reads Architecture as Code, checks architecture policies, blocks risky pull requests, and suggests safer designs.
 
-The wedge it leads with: **teams stand up a new first-party application for every feature instead of reusing the one their team already owns.** Every one of those was approved in a pull request nobody could reasonably have rejected, because no reviewer remembers the previous thirty-nine. Nothing on the market checks that, and [section 5 of Idea 9](./09-prior-art-and-positioning.md) explains why nothing on the market easily can.
+The wedge it leads with: **teams stand up a new first-party application for every feature instead of reusing the one their team already owns.** Every one of those was approved in a pull request nobody could reasonably have rejected, because no reviewer remembers the previous thirty-nine. No product on the market checks that, and [section 5 of Idea 9](./09-prior-art-and-positioning.md) explains why the parts exist but nobody has assembled them.
 
 > **Note on the name.** The product is renamed **Extant**; two projects already ship as ArchGuard, one of them an AI architecture reviewer on the GitHub Marketplace. The rename is mechanical and deferred to its own change, so this pack still reads `ArchGuard AI` and `ArchGuard-Agent` throughout. See [The name](./00-final-idea.md#the-name).
 
@@ -32,14 +32,14 @@ The strongest research-backed positioning is **shift-left Architecture Review Bo
 | Structurizr CLI | Validates and exports architecture models | Does not enforce organization-specific policy or comment on PR risk. |
 | ArchUnit / NetArchTest | Code-level architecture tests | Repository-scoped and dependency-shaped. Does not understand C4 models, IaC topology, or natural-language policies, and ships no notion of how many of something the organization owns. |
 | OPA / Checkov / tfsec | Policy-as-code and IaC compliance | Evaluates one plan. OPA and Conftest *can* take external data, so the check is buildable — what is missing is the asset ontology, the governed registry, and an authoring path for people who do not write Rego. |
-| Backstage / service catalogs / CMDBs | Inventory of what the organization owns | Records the fortieth first-party app; never blocks the fortieth pull request. |
+| Backstage / service catalogs / CMDBs | Inventory of what the organization owns | Records the fortieth first-party app; ships no gate to block the fortieth pull request. |
 | Terraform drift tools | Infrastructure drift | Does not compare deployed topology to approved C4 architecture. |
 | ADR/documentation tools | Records decisions | Does not enforce decisions against live pull requests. |
 | Generic AI review agents and review skills | Model-judged review comments on a pull request | Re-decides on every run, so verdicts are irreproducible, untestable, and cannot be a required check. See [Idea 8](./08-vs-ai-review-agents.md). |
 | Microsoft Threat Modeling Tool (TMT) | STRIDE threat analysis over a hand-drawn data-flow diagram, as a point-in-time design activity | Security-scoped, desktop-based, and disconnected from CI/CD. It cannot block a PR, and it cannot tell you when the design changed underneath it. |
 | IriusRisk / OWASP Threat Dragon | Threat modeling with more automation, some of it pipeline-friendly | Still security-scoped and threat-library-driven. Does not evaluate team-authored architecture quality policies or compare C4 intent with IaC reality. |
 
-This creates a defensible hackathon claim: **ArchGuard AI connects architecture intent, infrastructure reality, the organization's existing asset registry, natural-language policy, and PR enforcement in one workflow.** Be precise about the moat when asked: the parts exist and a determined team could assemble them, but no product ships the loop, because it requires owning the asset ontology, the governance of the registry as an input, and the English authoring path at the same time — and the catalogs that know what exists still cannot gate, while the gates that can block cannot see past one repository.
+This creates a defensible hackathon claim: **ArchGuard AI connects architecture intent, infrastructure reality, the organization's existing asset registry, natural-language policy, and PR enforcement in one workflow.** Be precise about the moat when asked: the parts exist and a determined team could assemble them, but no product ships the loop, because it requires owning the asset ontology, the governance of the registry as an input, and the English authoring path at the same time — and the catalogs that know what exists still ship no gate, while the gates that can block ship no view past one repository.
 
 ## How this differs from threat modeling tools
 
@@ -72,7 +72,7 @@ The order-and-inventory scenario stays in the written submission. It has opened 
 
 | # | Idea | Best for | Why it can win |
 |---|------|----------|----------------|
-| 0 | [**The Final Idea**](./00-final-idea.md) | **Decided scope** | Leads with erosion by approved addition, settles the product into two policy packs over one graph, and adds the reuse primitives no incumbent can express. |
+| 0 | [**The Final Idea**](./00-final-idea.md) | **Decided scope** | Leads with erosion by approved addition, settles the product into two policy packs over one graph, and adds the reuse primitives no incumbent ships. |
 | 1 | [Automated Architecture Review Board for PRs](./01-automated-arb-pr-review.md) | Core MVP | Converts architecture governance into developer-native PR feedback. |
 | 2 | [Architecture Drift Radar](./02-architecture-drift-radar.md) | Wow factor | Proves the tool compares intended architecture with deployed reality. |
 | 3 | [Remediation Copilot for Architecture Fixes](./03-remediation-copilot.md) | Demo magic | Turns violations into concrete, reviewable repair guidance. |
