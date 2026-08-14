@@ -34,10 +34,10 @@ The prose is what makes the rule human. The metadata is what makes it routable, 
 | `tier` | `org` or `team` |
 | `owner` | Owning team, matched against `CODEOWNERS` |
 | `scope` | Which C4 elements, tags, or domains the rule applies to |
-| `type` | Which evaluator runs it: `structural`, `deployment`, or `operational` |
+| `type` | Which evaluator runs it: `structural`, `deployment`, `proliferation`, or `operational` |
 | `severity` | Risk weight used for ranking and scorecard roll-up |
 | `mode` | `blocking` or `advisory` |
-| `evidence` | Which input the verdict must be derived from: architecture model, IaC plan, or metric source |
+| `evidence` | Which input the verdict must be derived from: architecture model, IaC plan, asset registry, or metric source |
 | `review_by` | Date the rule must be re-confirmed, so stale rules surface instead of rotting |
 | `body` | The policy in the team’s own words, quoted verbatim in every PR comment |
 
@@ -69,6 +69,7 @@ Being explicit about type prevents the classic failure where a team writes an op
 | **Structural** | The C4/Structurizr architecture graph, for example “no direct database access across domain boundaries” | Every architecture-affecting pull request | Yes, deterministic |
 | **Deployment / drift** | Terraform or Bicep plan, as in [Idea 2](./02-architecture-drift-radar.md) | Pull request plus scheduled sweep | Yes, when the drift is unambiguous |
 | **Operational / evolutionary** | A bound metric source, for example “p99 checkout latency stays under the agreed budget” or “coupling score must not increase” | Trend evaluation on a schedule | No, reported as trend only |
+| **Proliferation** | The organization's asset registry, for example “a feature must not introduce a new first-party application” | Every pull request that creates a registrable asset, plus a scheduled registry sweep | Yes, deterministic. See [Idea 0](./00-final-idea.md) |
 
 An operational rule with no metric binding is rejected at authoring time with an explanation, rather than silently passing forever.
 
@@ -86,7 +87,8 @@ An operational rule with no metric binding is rejected at authoring time with an
    - ownership constraints,
    - fan-in and fan-out thresholds,
    - tag-based constraints,
-   - numeric budget or threshold.
+   - numeric budget or threshold,
+   - **reuse of a registered shared asset, and cardinality of an asset class over a scope.**
 3. The compiled predicate, the confidence score, and the agent’s **canonical restatement** of the rule are committed alongside the prose and reviewed in the policy pull request. Humans approve the interpretation once, in the open, with a diff.
 4. At pull-request time the evaluator is deterministic: it replays the compiled predicate over the graph. Same input, same verdict, every time, with the traversal path as evidence.
 5. The PR comment still quotes the team’s original prose, so governance still *reads* as natural language even though enforcement is mechanical.
@@ -112,9 +114,9 @@ Each fitness function ships with at least one architecture snippet it must **pas
 
 ## Demo story
 
-A payments engineer writes a new rule in plain English and opens a policy pull request. ArchGuard AI replies in that same PR with its canonical restatement, the compiled predicate, a confidence score, and the two generated fixtures showing one architecture that passes and one that fails. The engineer approves the interpretation and merges.
+A platform architect writes a new rule in plain English — *a feature must not introduce a new first-party application; it authenticates through its team's registered application* — and opens a policy pull request. ArchGuard AI replies in that same PR with its canonical restatement, the compiled predicate, a confidence score, the two generated fixtures showing one architecture that passes and one that fails, and one clarifying question it refuses to guess at: *do development-tenant registrations count?* The architect answers, approves the interpretation, and merges.
 
-Minutes later, a different pull request adds the exact synchronous dependency the rule forbids. The check fails deterministically, quotes the team’s own sentence back to them, and shows the offending path through the architecture graph.
+Minutes later, a different pull request adds exactly the new application registration the rule forbids. The check fails deterministically, quotes the platform team's own sentence back to them, names the application that should have been reused, and prices the maintenance the change would have committed the organization to.
 
 ## MVP scope
 

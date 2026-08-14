@@ -77,8 +77,8 @@ a human wrote in English and approved once.
 |---|---|---|
 | Altitude | Low-level design, inside a service | High-level architecture, between services |
 | Question | Is this code shaped the way we said we design? | Is this system shaped the way we said we architect? |
-| Graph level | Design level: modules, types, ports, layers, stereotypes, aggregates | System and deployment levels: systems, containers, components, planned infrastructure, trust boundaries |
-| Declared in | Per-service design declarations | Structurizr/C4 DSL plus infrastructure as code |
+| Graph level | Design level: modules, types, ports, layers, stereotypes, aggregates | System, deployment and capability-registry levels: systems, containers, components, planned infrastructure, trust boundaries, shared assets |
+| Declared in | Per-service design declarations | Structurizr/C4 DSL, infrastructure as code, and the org's asset registry |
 | Rules authored by | The owning team | Five tiers, from regulatory down to a single service |
 | Examples | SOLID, layering direction, dependency inversion, aggregate access, transaction boundary placement | **No new first-party application per feature**, one gateway per domain, no shared datastore across domains, no undeclared planned path |
 | Replaces | The design review comment a senior engineer repeats every sprint | The architecture review board meeting |
