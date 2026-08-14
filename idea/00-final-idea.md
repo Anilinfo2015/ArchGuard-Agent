@@ -4,12 +4,72 @@ This document supersedes the exploratory framing in ideas 1 to 7 and fixes the s
 product. Ideas 1 to 7 remain valid as detail and demo material; this page decides what
 ArchGuard-Agent *is*.
 
+## The problem
+
+> **Architecture does not die from violations. It dies from additions that every reviewer
+> approved.**
+
+Nobody ever rejected the *first* new first-party application. Or the second. Each one arrived in
+a pull request that was locally correct, adequately justified, and approved by a competent
+reviewer who had no reason to say no. The fortieth is a catastrophe that no single pull request
+caused and no single reviewer could have prevented, because **no human reviewer remembers the
+previous thirty-nine**.
+
+That is the shape of real architectural decay. Not the forbidden edge a linter catches — the
+accumulated, individually reasonable addition. It is invisible in any one diff and visible only
+in aggregate, which makes it precisely the failure mode a machine gate is uniquely qualified for.
+Nothing on the market checks it.
+
+### The scenario this product is built around
+
+A platform team owns one registered first-party application. Every feature is supposed to
+authenticate through it. But standing up a new application registration is a five-minute
+self-service operation, and reusing the shared one requires a conversation with another team, so
+every feature ships its own. Two years later the organization owns forty of them — each with its
+own secret to rotate, its own consent grants, its own compliance review, its own on-call surface,
+and no owner willing to delete it.
+
+Every one of those was approved. No pull request was wrong. The architecture is.
+
+The rule the organization actually wants is one English sentence:
+
+> *A feature must not introduce a new first-party application. It authenticates through its
+> team's registered application.*
+
+No existing tool can enforce that sentence on a pull request. That gap is what ArchGuard-Agent is
+for, and everything below is in service of it.
+
 ## One sentence
 
-ArchGuard-Agent is Architecture as Code governance in the pull-request loop, delivered as two
-policy packs — **Design Rules** for low-level design and **Fitness Functions** for high-level
-architecture — over one multilevel graph, one rule format, one compiler, one evaluator, and one
-report surface.
+ArchGuard-Agent compiles an organization's architecture rules from English into reviewed,
+versioned predicates once, then replays them deterministically on every pull request against one
+graph spanning code structure, deployed topology, and **the shared platform assets the
+organization already owns** — so a change is judged not only on whether it points the wrong way,
+but on whether it should exist at all.
+
+The delivery shape is two policy packs — **Design Rules** for low-level design and **Fitness
+Functions** for high-level architecture — over one multilevel graph, one rule format, one
+compiler, one evaluator, and one report surface.
+
+## Why incumbents cannot follow
+
+[Idea 8](./08-vs-ai-review-agents.md) explains why this is not a review skill. It does not
+explain why an established tool could not simply add the capability next quarter. This does, and
+it is the stronger moat: **the cardinality of an asset class across an organization is out of
+reach for every incumbent by design, not by omission.**
+
+| Incumbent | What it is | Why the rule above is unreachable |
+|---|---|---|
+| ArchUnit, import-linter, dependency-cruiser, NetArchTest, Konsist | Repository-scoped import-graph analyzers | The model is edges between symbols in **one** compilation unit. "How many of these exist across the organization" is not a question it can ask |
+| CodeQL | Whole-repository semantic code analysis | Can find an application registration in one repository. Has no concept of *this team already owns one*, no registry join, no ownership model |
+| Checkov, tfsec, OPA and Conftest | Policy over a single infrastructure plan in isolation | Can ban a resource type outright. Cannot answer "is this a duplicate of an approved asset?", because that needs state the plan does not contain |
+| Terraform Cloud, Spacelift, env0 | Drift between plan and live infrastructure | Compares one stack against itself. No notion of a shared asset that should have been reused |
+| Backstage, service catalogs, CMDBs | Hold the registry of what the organization owns | Inventories, not gates. They record the fortieth application; they never stop the fortieth pull request |
+
+Each is missing a *different* half. The catalogs know what exists but cannot gate. The gates
+evaluate but cannot see past one repository. **The contribution here is the join** — an
+org-level asset registry read as evidence, evaluated inside the pull-request loop, against a rule
+a human wrote in English and approved once.
 
 ## The two components
 
@@ -20,7 +80,7 @@ report surface.
 | Graph level | Design level: modules, types, ports, layers, stereotypes, aggregates | System and deployment levels: systems, containers, components, planned infrastructure, trust boundaries |
 | Declared in | Per-service design declarations | Structurizr/C4 DSL plus infrastructure as code |
 | Rules authored by | The owning team | Five tiers, from regulatory down to a single service |
-| Examples | SOLID, layering direction, dependency inversion, aggregate access, transaction boundary placement | No synchronous payments-to-profile dependency, no shared datastore across domains, no undeclared planned path |
+| Examples | SOLID, layering direction, dependency inversion, aggregate access, transaction boundary placement | **No new first-party application per feature**, one gateway per domain, no shared datastore across domains, no undeclared planned path |
 | Replaces | The design review comment a senior engineer repeats every sprint | The architecture review board meeting |
 
 **They are policy packs and reporting views, not separate systems.** They are presented
@@ -43,23 +103,49 @@ flowchart TB
         L1["Design level<br/>modules, types, ports, layers, stereotypes"]
         L2["System level<br/>systems, containers, components, boundaries"]
         L3["Deployment level<br/>planned infrastructure resources"]
+        L4["Capability registry level<br/>shared assets the org already owns"]
         L1 -- "implemented-by" --> L2
         L2 -- "deployed-as" --> L3
+        L2 -- "obtains-capability-from" --> L4
+        L3 -- "registered-as" --> L4
     end
 
     P1["Pack 1<br/>Design Rules"] -.-> L1
     P2["Pack 2<br/>Fitness Functions"] -.-> L2
     P2 -.-> L3
+    P2 -.-> L4
     P3["Realization rules<br/>span levels"] -.-> G
 ```
 
-- The graph carries three levels in one structure, with explicit cross-level edges
-  `implemented-by` and `deployed-as`.
+- The graph carries four levels in one structure, with explicit cross-level edges
+  `implemented-by`, `deployed-as`, `obtains-capability-from` and `registered-as`.
 - Pack 1, Design Rules, evaluates the design level.
-- Pack 2, Fitness Functions, evaluates the system and deployment levels.
+- Pack 2, Fitness Functions, evaluates the system, deployment and capability-registry levels.
+- The **capability registry level** is the org-wide inventory of shared platform assets. It is
+  what turns "we already have one of these" from tribal knowledge into a checkable fact, and it
+  is the level no incumbent tool has.
 - Realization rules span levels and are the designated home for any rule that needs more than
   one level at once. A rule that needs a cross-level join the graph cannot express is rejected
   at authoring time, with that reason.
+
+### The capability registry level
+
+**Nodes.** `capability-provider` — a first-party application, gateway, event bus, telemetry
+pipeline, feature-flag service or secret store. Each carries its owning team, its registration
+identity, its permission or scope set, and its carrying cost.
+
+**Edges.** `obtains-capability-from`, joining a feature or container to the provider it uses,
+and `registered-as`, joining a deployed or planned resource to its registry entry. A resource
+with no `registered-as` edge is undeclared, and that is a finding in its own right.
+
+**Evidence providers.** Infrastructure-as-code application-registration resources in Terraform,
+Bicep or ARM; client-identifier bindings in service configuration; deployment manifests that
+declare new service principals; and an export of the organization's existing asset registry.
+
+ArchGuard reads the registry; it never becomes one. The same discipline that forbids writing a
+compiler frontend forbids writing a service catalog. If an organization has no registry, this
+level is empty, every proliferation rule resolves to `UNKNOWN`, and the report says so — it does
+not quietly pass.
 
 ### Components and data flow
 
@@ -71,6 +157,7 @@ flowchart LR
         A3["Terraform / Bicep plan"]
         A4["Source code"]
         A5["Threat model export"]
+        A6["Asset registry export"]
     end
 
     subgraph EP["Evidence providers"]
@@ -78,6 +165,7 @@ flowchart LR
         E2["ArchUnit / Roslyn / dependency-cruiser"]
         E3["IaC plan parser"]
         E4["Trust boundary importer"]
+        E5["Registry importer"]
     end
 
     GB["Graph builder"]
@@ -100,10 +188,12 @@ flowchart LR
     A4 --> E2
     A3 --> E3
     A5 --> E4
+    A6 --> E5
     E1 --> GB
     E2 --> GB
     E3 --> GB
     E4 --> GB
+    E5 --> GB
     GB --> GR
     R1 --> CMP
     CMP --> R2
@@ -117,6 +207,8 @@ flowchart LR
 
 - Architecture as Code artifacts are read only by their native parsers, wrapped as evidence
   providers. ArchGuard never writes a compiler frontend.
+- The asset registry export is imported, never authored. ArchGuard consumes the organization's
+  existing inventory of shared platform assets; it does not become the system of record for it.
 - The graph builder assembles one multilevel graph, twice per pull request: once for the base
   commit and once for the head commit.
 - Governance as Code holds the English rule documents, the compiled predicates and their
@@ -387,6 +479,7 @@ matrix, and **only structurally observable properties with adequate coverage may
 | Liskov substitution, semantic contract compatibility | **Not provable structurally.** `must-implement` proves a relationship exists, not that the contract is honoured | Advisory only, flagged for human review |
 | Resilience policy, idempotency | Only that a policy was **declared**, never that it is effective at runtime | Advisory only |
 | Deployment and drift | A Terraform or Bicep plan is **proposed** state, not deployed reality | May block on plan divergence; true deployed drift requires the scheduled sweep against live state |
+| Shared-asset proliferation and reuse | A declared asset class counted over a governed registry and the change under review — directly observable, given the registry | **May block** for assets whose creation is visible in the repository. Assets created outside any repository are visible only to the scheduled sweep |
 | Operational metrics, latency, cost, error budget | Requires a bound external metric source | **Never gates.** Trend only |
 | Trade-off and judgement | Nothing | **Never gates.** Routed to the ARB |
 
@@ -483,13 +576,46 @@ than written. Gate status per family is governed by the capability matrix above.
 
 ### The closed primitive set
 
+**Structural primitives**, which constrain relationships between things that already exist:
+
 `may-not-depend-on` · `must-depend-only-on-abstractions` · `must-be-instantiated-via` ·
 `must-reside-in` · `must-implement` · `must-not-be-exported` · `must-not-cycle` ·
 `must-not-exceed(metric, budget)` · `must-not-regress(finding-set)` · `must-be-annotated-with` ·
 `must-cross-via`.
 
-Note what is absent: no primitive inspects a value, follows data, or reasons about control flow.
-That absence *is* the CodeQL boundary.
+**Reuse primitives**, which constrain what may be *brought into existence*:
+
+`must-obtain-capability-via(capability, provider)` · `must-reuse(asset-class, scope)` ·
+`must-not-exceed-count(asset-class, scope, n)` · `must-not-introduce(asset-class)`.
+
+Every primitive above the line is dependency-shaped: each asks whether an edge between two
+existing nodes is permitted. That is the entire vocabulary of every architecture-test tool in the
+field, and it is exactly why none of them can express the rule this product is built around.
+**Existence is not a dependency.** A second question had to be added to the language: *should
+this thing exist at all, given what the organization already owns?*
+
+| Primitive | What it asserts | Canonical use |
+|---|---|---|
+| `must-obtain-capability-via(capability, provider)` | Elements in scope obtain a named capability from a declared provider. A **positive obligation**, not a prohibition | A feature obtains *identity* from its team's registered application |
+| `must-reuse(asset-class, scope)` | Only registry-declared instances of an asset class may be referenced within a scope | Only a registered gateway may be routed through |
+| `must-not-exceed-count(asset-class, scope, n)` | A cardinality budget over a scope. `n = 1` is the singleton form | One telemetry pipeline per domain |
+| `must-not-introduce(asset-class)` | Pure ratchet: the count at head may not exceed the count at base | No net new first-party applications |
+
+`must-obtain-capability-via` is the one that matters most, because it is what keeps this
+*architecture* rather than a prohibition list. A rule that only forbids leaves a developer with a
+genuine need and no route, and a developer with no route routes around the gate. A rule that
+names the provider states the intended design and makes the remediation obvious.
+
+Note what is still absent: no primitive inspects a value, follows data, or reasons about control
+flow. That absence *is* the CodeQL boundary, and the four additions preserve it — counting
+declared instances of a declared asset class is not dataflow analysis. **Test A therefore holds
+unchanged.** Every operand is a declared asset class or a registry-resolved provider, both of
+which a human wrote into the model.
+
+Test B holds too, and more comfortably than most structural rules manage. *"We are standing up
+another first-party application"* is not a borderline architecture question; it is among the most
+common items on a real architecture review board's agenda, and the remediation is a textbook
+design move: **reuse the existing one.**
 
 ## Evaluation: complete graphs, delta reporting
 
@@ -576,12 +702,92 @@ ArchGuard therefore does not attempt general implication. It removes the problem
 | **Structural** | The system level of the graph | Pull-request triggered | Yes, deterministic |
 | **Realization** | Design level versus system level, through `implemented-by` | Pull-request triggered | Yes, for positive findings at high confidence; absence of evidence is informational |
 | **Deployment and drift** | Terraform or Bicep **plan**, which is proposed state | Pull request, plus a sweep against live state | Yes on plan divergence; deployed-reality drift only from the sweep |
+| **Proliferation** | The capability registry level against the head graph: what this change brings into existence, versus what the organization already owns | Pull request, plus a scheduled registry sweep | Yes. The finding is directly observable and the remediation is a design move |
 | **Staleness** | Freshness of a required artifact, such as a threat model against imported trust boundaries | Pull-request triggered | Advisory by default; the owning function may opt in |
 | **Operational and evolutionary** | A bound external metric source | Continuous or scheduled | **No.** Trend only |
 | **Holistic and judgement** | Explicitly not automatable | On demand | **No.** Routed to the ARB with a prepared packet |
 
 An operational rule with no metric binding is rejected at authoring time rather than passing
 silently forever.
+
+### Proliferation is additive, not a redesign
+
+The most important property of the `proliferation` type is how little it changed. It reuses the
+spine exactly as built:
+
+- **Base-and-head evaluation** already gives `must-not-introduce` its meaning for free. The
+  primitive *is* the finding-set delta the evaluator already computes.
+- **`UNKNOWN` never degrades to `PASS`**, so an unresolvable configuration binding surfaces
+  rather than passing.
+- **Exceptions with an expiry** already provide the escape hatch a legitimately new asset needs.
+- **The self-approval hole** and its governed-declarations answer already cover the registry.
+- **The policy resolution trace** already explains why a rule stayed silent.
+
+An entirely new rule class landing with zero changes to the evaluator contract, the verdict
+model, the exception path or the report surface is itself the credibility argument: the spine was
+designed correctly, and this is what it looks like when a design pays out.
+
+### What proliferation rules honestly cannot do
+
+Stating the limits precisely is what makes the capability believable.
+
+- **Recall is bounded by what is in a repository.** An application created by clicking through a
+  portal never appears in any pull request, so the gate cannot see it. The pull-request gate
+  covers the code-visible path; a **scheduled registry sweep** covers the rest. The difference
+  between them is published as its own report — *assets that exist but were never declared*. The
+  claim is never "the gate prevents creation"; it is "the gate prevents creation through the
+  reviewed path, and names the unreviewed path".
+- **An unresolvable binding is `UNKNOWN`, not `PASS`.** If a client identifier in configuration
+  cannot be resolved to a registry provider, the rule says it does not know. A proliferation rule
+  that silently matched nothing would be the most dangerous rule in the catalog, because the
+  metric it protects only moves in one direction.
+- **The self-approval hole bites hardest here.** A developer who adds their brand-new application
+  to the registry in the same pull request defeats the rule completely. The registry is therefore
+  a **governed input under its own `CODEOWNERS`**, exactly like `architecture/` and `design/`: a
+  registry addition is a policy change routed to the platform owner even when it arrives inside a
+  feature pull request. This is the existing mechanism, reused, not a new one.
+- **Legitimate new assets exist.** A separate tenant, a compliance boundary, a data-residency
+  requirement — each is a real reason for a genuinely new application. The rule never bans
+  absolutely. It routes to the platform owner with a justification and an expiry date, which is
+  the difference between governance and obstruction.
+
+### The starter catalog: reuse over rebuild
+
+One bespoke rule about first-party applications is a feature. A family that teams pick from is a
+product — and it also answers the adoption question nobody asks until rollout: **nobody writes
+architecture rules on a blank page.**
+
+| Catalog rule | Asset class | Compiles to |
+|---|---|---|
+| One identity application per team | first-party application registration | `must-not-introduce(first-party-app)` + `must-obtain-capability-via(identity, team registered app)` |
+| One gateway per domain | API gateway or front door | `must-not-exceed-count(gateway, domain, 1)` |
+| One telemetry pipeline | logging and metrics sink | `must-reuse(telemetry-pipeline, org)` |
+| One feature-flag system | flag provider | `must-obtain-capability-via(feature-flags, declared provider)` |
+| One datastore per bounded context | database instance | `must-not-exceed-count(datastore, context, 1)` |
+| One authentication library | auth SDK | `must-reuse(auth-library, org)` |
+
+Every row is the same shape: an asset class that is cheap to create once and expensive to own
+forever. Teams adopt by picking a row and naming their provider, so the free-form compiler is
+reserved for the genuinely bespoke minority — which is also where compilation fidelity risk is
+concentrated.
+
+### Carrying cost: turning the gate into a budget instrument
+
+Every proliferation finding publishes the recurring annual burden the change signs the
+organization up for: secret and certificate rotation, compliance and SDL review, tenant consent
+maintenance, on-call surface, and eventual deprecation work. The finding does not merely say
+*this violates a rule*; it says **this pull request adds roughly N engineer-hours per year,
+permanently, and here is the asset that already does this.**
+
+That reframes the conversation from architectural preference — which developers are entitled to
+argue with — to committed operational spend, which is much harder to wave through. It also gives
+the organization the only architecture metric leadership has ever actually asked for: **net new
+shared platform assets per quarter, trending toward zero**, with an attached cost avoided.
+
+Two honesty constraints. The cost is a **declared property of the asset class**, set by the
+platform owner in the registry, not a number ArchGuard invents. And it is reported as a range
+with its basis shown, because a single confident figure invites an argument about the figure
+instead of about the architecture.
 
 ### The policy resolution trace
 
@@ -604,7 +810,54 @@ silent** is as untrustworthy as one that cannot explain why it fired.
 ## The shared spine
 
 Both packs use the same rule document, compiler, expressibility test, evaluator contract, and
-exception path.
+exception path. Here is the rule this product exists for, in full:
+
+```yaml
+id: PLT-001                 # stable, cited in every report, never reused
+title: A feature must not introduce a new first-party application
+tier: org                   # T0 | org | domain | team | service
+owner: platform-identity    # matched against CODEOWNERS
+scope: [ "asset-class:first-party-app", "tenant:corp" ]
+type: proliferation         # structural | realization | deployment | proliferation | staleness | operational | holistic
+severity: high
+mode: blocking              # blocking | advisory
+evidence: [ asset-registry, iac-plan, service-config ]
+asset_class: first-party-app
+capability: identity
+provider: registry:team-registered-app
+carrying_cost: 20-30h/year  # declared by the platform owner; published in every finding
+review_by: 2026-12-31       # mandatory, so stale rules surface instead of rotting
+body: >
+  A feature must not introduce a new first-party application. It authenticates through
+  its team's registered application. If the registered application lacks a permission the
+  feature needs, extend that application rather than standing up another one.
+```
+
+It compiles to two primitives, and it is worth seeing how short the compiled form is:
+
+```
+must-not-introduce(first-party-app)
+  AND must-obtain-capability-via(identity, registry:team-registered-app)
+```
+
+Five reviewable lines of policy, not forty lines of generated Java. And in compiling it the agent
+returned one `clarify` rather than guessing, because the English was genuinely ambiguous:
+
+> *Does a registration created solely for a development or test tenant count as a new first-party
+> application? The sentence does not say, and the two readings gate differently.*
+
+That question is the product working correctly. The compiler that guesses here encodes a rule
+nobody agreed to; the compiler that asks gets one sentence added to `body` and a scope predicate
+that a human approved on purpose.
+
+**The end-to-end story, across both packs:** an org fitness function says *payments must not
+synchronously depend on customer profile* at the system level. The payments team's design rule
+says *the checkout domain layer may depend only on ports, and the profile projection is the only
+permitted source* at the design level. One pull request, one report, two levels, one graph. No
+single existing tool does both.
+
+<details>
+<summary>The structural rule referenced above, in the same schema</summary>
 
 ```yaml
 id: PAY-014                 # stable, cited in every report, never reused
@@ -612,7 +865,7 @@ title: Checkout must not synchronously depend on customer profile
 tier: team                  # T0 | org | domain | team | service
 owner: payments             # matched against CODEOWNERS
 scope: [ "tag:payments", "container:Checkout API" ]
-type: structural            # structural | realization | deployment | staleness | operational | holistic
+type: structural            # structural | realization | deployment | proliferation | staleness | operational | holistic
 severity: high
 mode: blocking              # blocking | advisory
 evidence: architecture-model
@@ -623,11 +876,7 @@ body: >
   projection kept up to date by events.
 ```
 
-**The end-to-end story:** an org fitness function says *payments must not synchronously depend
-on customer profile* at the system level. The payments team's design rule says *the checkout
-domain layer may depend only on ports, and the profile projection is the only permitted source*
-at the design level. One pull request, one report, two levels, one graph. No single existing
-tool does both.
+</details>
 
 ## Repository layout and ownership
 
