@@ -70,7 +70,7 @@ That is the argument, delivered by a competitor rather than by us.
 | Terraform drift against live infrastructure | Terraform Cloud, Spacelift, env0 | **Solved.** Wrong kind of drift |
 | Fitness functions as a concept | *Building Evolutionary Architectures*, ArchGuard | **Established.** Not novel to claim |
 | Declared C4 model versus planned IaC topology | — | **Unoccupied** |
-| **Org-wide cardinality and reuse of shared platform assets, gated on a pull request** | — | **Unoccupied, and structurally so.** The catalogs that know what exists cannot gate; the gates that can block cannot see past one repository |
+| **Org-wide cardinality and reuse of shared platform assets, gated on a pull request** | — | **Unoccupied.** The catalogs that know what exists cannot gate; the gates that can block cannot see past one repository. Assemblable from parts today; shipped by nobody |
 | English compiled once into a reviewed, versioned architecture predicate | — | **Unoccupied in this domain** |
 
 Two things to take from the table. First, **do not claim to have invented fitness functions,
@@ -115,29 +115,43 @@ the same model, in the same pass, from the same misreading.
 Neither half is shipped anywhere. The compile-and-review loop exists in research, in a different
 domain. The declared-model-versus-planned-infrastructure comparison does not appear to exist at
 all. And the last clause — **cardinality of an asset class across an organization, enforced on a
-pull request** — is not merely unbuilt; it is unreachable for every incumbent category, because
-each one holds only half of what the check requires.
+pull request** — is not shipped by any product in any of the categories above, because each one
+holds only half of what the check requires.
 
 Stated more bluntly, for a judge: **everyone else asks the model on every pull request. We ask it
-once, make a human sign the answer, and then never ask again — and the question we ask is one
-nobody else's tool can even represent.**
+once, make a human sign the answer, and then never ask again — and the question we ask is one no
+shipped tool asks at all.**
 
-### Why "they could just add it" is wrong here
+### Why "they could just add it" is a fair question with a real answer
 
-This is the answer to the hardest question in the room, and it is stronger than determinism.
+This is the hardest question in the room. It deserves an honest answer, because the dishonest one
+is easy to falsify from the vendor documentation and would take the rest of the pitch down with
+it.
 
-- **ArchUnit, import-linter, dependency-cruiser, NetArchTest, Konsist** model edges between
-  symbols inside one compilation unit. "How many of these exist across the organization" is not
-  a query their model can express, at any level of effort.
-- **CodeQL** can find an application registration in a repository. It has no concept of *this
-  team already owns one*, no registry join, and no ownership model.
-- **Checkov, tfsec, OPA and Conftest** evaluate a single plan in isolation. They can ban a
-  resource type outright; they cannot answer "is this a duplicate of an approved asset?", because
-  that requires state the plan does not contain.
-- **Backstage and service catalogs** hold exactly the state the others lack, and have no gate.
+**Concede the technical point immediately.** Open Policy Agent evaluates over arbitrary external
+data and Conftest accepts it with `--data`. Backstage's Catalog API is callable from a required
+status check. ArchUnit accepts a custom `ArchCondition` that can query anything reachable from a
+JVM. Nobody is *technically barred* from building this. A capable platform team could wire a
+version of it together in a quarter — several probably have, privately, and thrown it away when
+its author changed teams.
 
-Each is missing a different half, and the missing halves are architectural rather than
-incidental. The contribution is the join.
+**Then make the claim that is actually true:** the check is the small part. What the product has
+to own is three things at once, and no incumbent owns more than one.
+
+- **The ontology.** Asset classes, capabilities, providers, scopes and their identity scheme —
+  including the provisional identity of an asset that does not exist yet, which is the only thing
+  that makes a pull-request gate possible at all. ArchUnit and CodeQL model symbols. Checkov
+  models resources. Neither models *an organizational asset*.
+- **The governance of the registry as an input.** The registry has to be a reviewed artifact with
+  a coverage contract and a freshness window, or the rule silently passes on a stale export.
+  Backstage holds the data and governs nothing about how it is consumed by a gate.
+- **The authoring experience.** A platform architect writes one English sentence and gets a
+  reviewed predicate. The alternative is Rego, which is precisely why the OPA-based version of
+  this exists in so few organizations despite being possible in all of them.
+
+Each incumbent is missing a different one of the three, and the missing pieces are structural to
+what each product *is*, not gaps anyone forgot to fill. **The contribution is the join, plus the
+governance that makes the join trustworthy** — not a capability nobody could implement.
 
 ## 6. Where novelty and demonstrability agree
 

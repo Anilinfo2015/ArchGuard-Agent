@@ -20,7 +20,7 @@ Ideas 1 to 7 below remain valid as detail and demo material; idea 0 decides what
 - **Fitness functions make architecture enforceable.** The architecture fitness function pattern frames architectural rules as automated checks that continuously validate system characteristics in delivery pipelines.
 - **CI/CD is the natural enforcement layer.** GitHub Actions and similar systems can run checks on pull requests, publish comments, and use required status checks to block merges when governance rules fail.
 - **AI belongs at policy authoring time, not at gate time.** A model that judges a policy live on every pull request is non-deterministic and un-auditable, and a single wrong `FAIL` on a required check destroys developer trust. Natural-language policy should be compiled into a deterministic check once, reviewed by humans, and then replayed mechanically.
-- **Existing architecture tooling is dependency-shaped and repository-scoped.** ArchUnit, import-linter, dependency-cruiser and NetArchTest all answer "is this edge permitted?" inside one compilation unit. None can answer "how many of these does the organization already own?", which is why the proliferation wedge is unoccupied.
+- **Existing architecture tooling is dependency-shaped and repository-scoped.** ArchUnit, import-linter, dependency-cruiser and NetArchTest all answer "is this edge permitted?" inside one compilation unit. None of them *ships* an answer to "how many of these does the organization already own?" — ArchUnit could be pushed there with a custom condition, and that is exactly the point: the wedge is unoccupied, not unreachable.
 - **Hackathon winners need a story, not just features.** Strong judging narratives emphasize impact, feasibility, novelty, and a clear before/after demo moment.
 
 ## Competitive white space
@@ -30,8 +30,8 @@ The strongest research-backed positioning is **shift-left Architecture Review Bo
 | Existing category | What it covers | Gap ArchGuard AI can own |
 |---|---|---|
 | Structurizr CLI | Validates and exports architecture models | Does not enforce organization-specific policy or comment on PR risk. |
-| ArchUnit / NetArchTest | Code-level architecture tests | Repository-scoped and dependency-shaped. Does not understand C4 models, IaC topology, or natural-language policies — and cannot ask how many of something the organization owns. |
-| OPA / Checkov / tfsec | Policy-as-code and IaC compliance | Sees one plan in isolation. Can ban a resource type; cannot tell a duplicate from a first instance. |
+| ArchUnit / NetArchTest | Code-level architecture tests | Repository-scoped and dependency-shaped. Does not understand C4 models, IaC topology, or natural-language policies, and ships no notion of how many of something the organization owns. |
+| OPA / Checkov / tfsec | Policy-as-code and IaC compliance | Evaluates one plan. OPA and Conftest *can* take external data, so the check is buildable — what is missing is the asset ontology, the governed registry, and an authoring path for people who do not write Rego. |
 | Backstage / service catalogs / CMDBs | Inventory of what the organization owns | Records the fortieth first-party app; never blocks the fortieth pull request. |
 | Terraform drift tools | Infrastructure drift | Does not compare deployed topology to approved C4 architecture. |
 | ADR/documentation tools | Records decisions | Does not enforce decisions against live pull requests. |
@@ -39,7 +39,7 @@ The strongest research-backed positioning is **shift-left Architecture Review Bo
 | Microsoft Threat Modeling Tool (TMT) | STRIDE threat analysis over a hand-drawn data-flow diagram, as a point-in-time design activity | Security-scoped, desktop-based, and disconnected from CI/CD. It cannot block a PR, and it cannot tell you when the design changed underneath it. |
 | IriusRisk / OWASP Threat Dragon | Threat modeling with more automation, some of it pipeline-friendly | Still security-scoped and threat-library-driven. Does not evaluate team-authored architecture quality policies or compare C4 intent with IaC reality. |
 
-This creates a defensible hackathon claim: **ArchGuard AI connects architecture intent, infrastructure reality, the organization's existing asset registry, natural-language policy, and PR enforcement in one workflow.** The registry join is the part no incumbent can add cheaply: the catalogs that know what exists cannot gate, and the gates that can block cannot see past one repository.
+This creates a defensible hackathon claim: **ArchGuard AI connects architecture intent, infrastructure reality, the organization's existing asset registry, natural-language policy, and PR enforcement in one workflow.** Be precise about the moat when asked: the parts exist and a determined team could assemble them, but no product ships the loop, because it requires owning the asset ontology, the governance of the registry as an input, and the English authoring path at the same time — and the catalogs that know what exists still cannot gate, while the gates that can block cannot see past one repository.
 
 ## How this differs from threat modeling tools
 
@@ -59,7 +59,7 @@ The most compelling demo is:
 1. Open on a **chart, not a diagram**: first-party applications owned by the organization over twenty-four months, climbing. “Every one of these was approved. No pull request was wrong. The architecture is.”
 2. A platform architect writes one English sentence — *a feature must not introduce a new first-party application; it authenticates through its team's registered application* — and ArchGuard replies with its canonical restatement, the compiled predicate, generated pass/fail fixtures, and **a clarifying question it refuses to guess at**: do development-tenant registrations count?
 3. A human approves the interpretation in a policy pull request. Five reviewable lines.
-4. A feature pull request adds a new application registration and a new client id. It is blocked, with the team's own sentence quoted back, `file:line` evidence in both the infrastructure plan and the service configuration, the name of the application it should have reused, the permission delta showing that application already covers the need, the carrying cost this change would commit the organization to, and a link to request a time-boxed exception.
+4. A feature pull request adds a new application registration and a new client id. It is blocked, with the team's own sentence quoted back, `file:line` evidence in both the infrastructure plan and the service configuration, the name of the application it should have reused, the registered permission set it would obtain from that application, the annual effort exposure this change takes on, and a link to request a time-boxed exception.
 5. The check is re-run with the model switched off and produces byte-identical output.
 6. Twenty seconds of reach: the same rule format catching a declared-C4-versus-Terraform drift, proving one spine over two very different kinds of evidence.
 7. A judge comments `@archguard what is the blast radius of removing the API gateway?` and receives a short Mermaid-backed architecture answer.
@@ -86,8 +86,8 @@ The order-and-inventory scenario stays in the written submission. It has opened 
 ## Suggested hackathon build sequence
 
 1. **Day 1:** Prepare the asset registry export, one team's registered first-party application, the org-tier proliferation rule, and a feature branch that adds a new application registration.
-2. **Day 2:** Build the CI workflow concept, the authoring-time policy compile step including the clarifying question, and the PR comment output format with carrying cost.
-3. **Day 3:** Add the reused-asset and permission-delta explanation, policy pass/fail fixtures running in CI, the twenty-four-month asset chart, and a clean dashboard/report artifact.
+2. **Day 2:** Build the CI workflow concept, the authoring-time policy compile step including the clarifying question, and the PR comment output format with the effort-exposure statement.
+3. **Day 3:** Add the reused-asset explanation with the provider's registered permission set, policy pass/fail fixtures running in CI, the twenty-four-month asset chart, and a clean dashboard/report artifact.
 4. **Demo polish:** Script the erosion-by-addition narrative, prepare one live `@archguard` PR question, rehearse the threat-modeling and the "why can't ArchUnit do this" answers, and keep a fallback recording ready.
 
 ## Reference links

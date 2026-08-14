@@ -39,7 +39,7 @@ governed**.
 | Evidence | A prose opinion | Rule id, `file:line`, traversal path, policy resolution trace |
 | Can it be a required check? | No. Nobody blocks merges on a verdict they cannot reproduce or appeal | Yes. That is the point |
 | Testability | You cannot unit-test a prompt's judgement | Every rule ships a pass fixture and a fail fixture that run in CI |
-| Governance | None. A skill has no notion of "the team rule may not relax the org rule" | Tier precedence, only-stricter, CODEOWNERS, expiring exceptions, `review_by` |
+| Governance | None. A skill has no notion of "the team rule may not relax the org rule" | Conjunctive tier inheritance, CODEOWNERS, expiring exceptions, `review_by` |
 | When it is wrong | You argue with it | You open a pull request against the predicate, or file an expiring exception |
 | Memory | Stateless | Scorecards, ratchets, exception register, per-rule false-positive rate |
 | Cost and latency | A model call per rule, per pull request, per repository | One compile per rule *edit*; evaluation is graph traversal |

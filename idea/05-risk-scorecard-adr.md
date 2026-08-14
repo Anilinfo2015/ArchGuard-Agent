@@ -1,5 +1,8 @@
 # Idea 5: Executive Risk Scorecard and ADR Generator
 
+> **Superseded in part by [Idea 0, the final idea](./00-final-idea.md).** Kept as detail and demo
+> material. Where the two disagree on scope, tiers, verdicts or what may gate, Idea 0 wins.
+
 ## One-line pitch
 
 ArchGuard AI converts architecture review findings into a risk scorecard and Architecture Decision Record so engineering leaders can track architectural health over time.

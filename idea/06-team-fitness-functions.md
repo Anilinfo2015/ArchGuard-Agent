@@ -1,5 +1,12 @@
 # Idea 6: Per-Team Fitness Functions Written in Natural Language
 
+> **Superseded in part by [Idea 0, the final idea](./00-final-idea.md).** This document is kept
+> for its authoring-model detail, which still holds. Three things in it were revised: the tier
+> model is now **five tiers**, not two; inheritance is **conjunctive** — an inherited rule always
+> applies, and a team rule adds to it rather than the compiler checking "only stricter"; and a
+> rule that cannot be expressed is **rejected at authoring time** rather than silently demoted to
+> advisory, with demotion a governed change. Where the two disagree, Idea 0 wins.
+
 ## One-line pitch
 
 Every team writes its own architecture fitness functions in plain English, ArchGuard AI compiles them into deterministic checks once at authoring time, and every pull request is then judged by a repeatable evaluator instead of a live model opinion.

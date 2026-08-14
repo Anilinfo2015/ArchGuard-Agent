@@ -7,7 +7,9 @@ declared architecture.
 
 ## Guarantees
 
-- Every finding includes a policy ID and `file:line` evidence.
+- Every finding includes a policy ID and a **locator**: `file:line` where the evidence is a
+  repository artifact, or a provider-native resource identifier where it is not — as with an
+  asset observed in a live platform inventory rather than in code.
 - Runtime evaluation does not use an LLM or invent graph edges.
 - High-confidence undeclared cross-context dependencies block; lower-confidence
   evidence is advisory.

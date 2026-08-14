@@ -1,5 +1,8 @@
 # Idea 1: Automated Architecture Review Board for Pull Requests
 
+> **Superseded in part by [Idea 0, the final idea](./00-final-idea.md).** Kept as detail and demo
+> material. Where the two disagree on scope, tiers, verdicts or what may gate, Idea 0 wins.
+
 ## One-line pitch
 
 ArchGuard AI becomes an always-on Architecture Review Board that reviews every architecture-changing pull request before it can merge.

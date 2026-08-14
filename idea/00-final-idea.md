@@ -51,25 +51,41 @@ The delivery shape is two policy packs — **Design Rules** for low-level design
 Functions** for high-level architecture — over one multilevel graph, one rule format, one
 compiler, one evaluator, and one report surface.
 
-## Why incumbents cannot follow
+## Why nothing on the market does this
 
 [Idea 8](./08-vs-ai-review-agents.md) explains why this is not a review skill. It does not
-explain why an established tool could not simply add the capability next quarter. This does, and
-it is the stronger moat: **the cardinality of an asset class across an organization is out of
-reach for every incumbent by design, not by omission.**
+explain why an established tool could not simply add the capability next quarter. This does — but
+it has to be argued carefully, because the tempting version of the argument is false.
 
-| Incumbent | What it is | Why the rule above is unreachable |
+**The false version:** *incumbents are technically incapable of this.* They are not, and claiming
+so in front of anyone who knows the tools would cost the whole submission its credibility. Open
+Policy Agent evaluates policy over arbitrary external data, and Conftest takes it with `--data`.
+Backstage exposes a Catalog API that a required status check could call. ArchUnit takes an
+arbitrary custom `ArchCondition` that could query anything a JVM can reach. Any competent platform
+team could assemble a version of this rule from parts that already ship.
+
+**The true version:** *no product ships the loop, and the reason is not effort.* Each incumbent
+sits on one side of a join it has no reason to cross.
+
+| Incumbent | What it is | What it would have to acquire |
 |---|---|---|
-| ArchUnit, import-linter, dependency-cruiser, NetArchTest, Konsist | Repository-scoped import-graph analyzers | The model is edges between symbols in **one** compilation unit. "How many of these exist across the organization" is not a question it can ask |
-| CodeQL | Whole-repository semantic code analysis | Can find an application registration in one repository. Has no concept of *this team already owns one*, no registry join, no ownership model |
-| Checkov, tfsec, OPA and Conftest | Policy over a single infrastructure plan in isolation | Can ban a resource type outright. Cannot answer "is this a duplicate of an approved asset?", because that needs state the plan does not contain |
-| Terraform Cloud, Spacelift, env0 | Drift between plan and live infrastructure | Compares one stack against itself. No notion of a shared asset that should have been reused |
-| Backstage, service catalogs, CMDBs | Hold the registry of what the organization owns | Inventories, not gates. They record the fortieth application; they never stop the fortieth pull request |
+| ArchUnit, import-linter, dependency-cruiser, NetArchTest, Konsist | Repository-scoped import-graph analyzers | An org-level asset ontology and a registry join. Its model is edges between symbols in one compilation unit; "how many of these exist across the organization" is not a question the default vocabulary asks. Reachable through a custom condition, shipped by none of them |
+| CodeQL | Whole-repository semantic code analysis | An ownership model and a registry join. It can find an application registration in one repository; it has no concept of *this team already owns one* |
+| Checkov, tfsec, OPA and Conftest | Policy over an infrastructure plan, with external data available | The registry itself, its ownership model, its freshness contract, and an authoring path for people who do not write Rego. The evaluation is the easy part; the governed input is the product |
+| Terraform Cloud, Spacelift, env0 | Drift between plan and live infrastructure | A cross-stack notion of a shared asset that should have been reused. It compares one stack against itself |
+| Backstage, service catalogs, CMDBs | Hold the registry of what the organization owns | A gate. They record the fortieth application; they never stop the fortieth pull request |
 
 Each is missing a *different* half. The catalogs know what exists but cannot gate. The gates
-evaluate but cannot see past one repository. **The contribution here is the join** — an
-org-level asset registry read as evidence, evaluated inside the pull-request loop, against a rule
-a human wrote in English and approved once.
+evaluate but cannot see past one repository. **The contribution here is the join** — an org-level
+asset registry read as evidence, with a declared coverage contract, evaluated inside the
+pull-request loop, against a rule a human wrote in English and approved once, with a remediation
+that names the asset to reuse.
+
+So the defensible claim is not *they cannot*. It is: **the pieces are lying on the floor and
+nobody has assembled them, because doing so requires owning the ontology, the governance of the
+registry as an input, and the authoring experience at the same time** — and no incumbent owns
+more than one of the three. That is a narrower claim, and unlike the other one it survives
+contact with somebody who has read the OPA documentation.
 
 ## The two components
 
@@ -123,7 +139,7 @@ flowchart TB
 - Pack 2, Fitness Functions, evaluates the system, deployment and capability-registry levels.
 - The **capability registry level** is the org-wide inventory of shared platform assets. It is
   what turns "we already have one of these" from tribal knowledge into a checkable fact, and it
-  is the level no incumbent tool has.
+  is the level no shipped architecture tool carries.
 - Realization rules span levels and are the designated home for any rule that needs more than
   one level at once. A rule that needs a cross-level join the graph cannot express is rejected
   at authoring time, with that reason.
@@ -140,7 +156,15 @@ with no `registered-as` edge is undeclared, and that is a finding in its own rig
 
 **Evidence providers.** Infrastructure-as-code application-registration resources in Terraform,
 Bicep or ARM; client-identifier bindings in service configuration; deployment manifests that
-declare new service principals; and an export of the organization's existing asset registry.
+declare new service principals; an export of the organization's sanctioned asset registry; and,
+for scheduled sweeps only, a **live platform inventory** read from the identity provider or cloud
+resource graph. The last two are deliberately distinct: the registry is what the organization has
+*approved*, the inventory is what actually *exists*, and the gap between them is the finding.
+
+**Carrying cost is declared once, on the asset class**, in the registry. A provider node may
+inherit it or state its own where a specific instance is unusually expensive; a rule never sets
+it, and only chooses whether to display it. One canonical location, so a number cannot disagree
+with itself across two reports.
 
 ArchGuard reads the registry; it never becomes one. The same discipline that forbids writing a
 compiler frontend forbids writing a service catalog. If an organization has no registry, this
@@ -497,8 +521,9 @@ overclaim this product is meant to avoid. So they are separated.
 
 **Test A — expressibility and evidence capability. Mechanical, decided by the compiler.**
 
-1. Every scope selector must bind to a **declared** design element — a layer, port, stereotype,
-   aggregate, module, context, team or service that a human wrote into the model.
+1. Every scope selector must bind to a **declared** element — a layer, port, stereotype,
+   aggregate, module, context, team or service, or a governed asset class, capability, provider or
+   tenant — that a human wrote into the model or the registry.
 2. The predicate must be drawn **only from the closed primitive set**, which contains no
    dataflow, no control-flow, no statement-level and no value-inspection primitives.
 3. The evidence required must be within the declared capability of an available provider.
@@ -508,7 +533,7 @@ overclaim this product is meant to avoid. So they are separated.
 
 The compiler *asks*; a person *answers*: would violating this be raised in a design review or
 recorded in an ADR, and can the remediation be stated as a design move — move, invert, split,
-introduce an abstraction, decouple?
+introduce an abstraction, decouple, **reuse, consolidate or retire**?
 
 Test A does most of the work, because the guardrail is the **expressive limit of the primitive
 set**: nothing CodeQL-shaped can be written down. But Test A alone is not sufficient, and the
@@ -526,8 +551,8 @@ counter-examples show why:
 The claim, stated correctly: **the compiler enforces expressibility; humans classify
 governance.**
 
-**The line to remember:** if the fix changes **where code lives or who may talk to whom**, it is
-ArchGuard; if it changes **what a line does**, it is CodeQL's job.
+**The line to remember:** if the fix changes **where code lives, who may talk to whom, or what
+the organization owns**, it is ArchGuard; if it changes **what a line does**, it is CodeQL's job.
 
 ### Permanent non-goals
 
@@ -576,6 +601,9 @@ than written. Gate status per family is governed by the capability matrix above.
 
 ### The closed primitive set
 
+This is the whole vocabulary, shared by both packs. It is placed here because Pack 1 exercises
+most of it, but the compiler, the evaluator and the expressibility test are the same for both.
+
 **Structural primitives**, which constrain relationships between things that already exist:
 
 `may-not-depend-on` · `must-depend-only-on-abstractions` · `must-be-instantiated-via` ·
@@ -599,7 +627,74 @@ this thing exist at all, given what the organization already owns?*
 | `must-obtain-capability-via(capability, provider)` | Elements in scope obtain a named capability from a declared provider. A **positive obligation**, not a prohibition | A feature obtains *identity* from its team's registered application |
 | `must-reuse(asset-class, scope)` | Only registry-declared instances of an asset class may be referenced within a scope | Only a registered gateway may be routed through |
 | `must-not-exceed-count(asset-class, scope, n)` | A cardinality budget over a scope. `n = 1` is the singleton form | One telemetry pipeline per domain |
-| `must-not-introduce(asset-class)` | Pure ratchet: the count at head may not exceed the count at base | No net new first-party applications |
+| `must-not-introduce(asset-class)` | A **finding-set** ratchet over asset *identities*: the observed set at head may contain no identity absent at base | No new first-party applications |
+
+`must-not-introduce` is deliberately expressed over identities, not over a count. A count is a
+score, and [the ratchet rules](#the-ratchet-corrected) forbid scores from gating because they
+drift with provider upgrades and renames. An asset instance has a stable identity, so the
+comparison is a set difference — the same shape as "no new cycles" — and it names *which* asset
+was introduced, which a count never could. It gates for the same reason every other finding-set
+ratchet does.
+
+The consequence is worth stating plainly, because it is a real semantic choice: this primitive
+forbids **any** new identity, including a one-for-one replacement that leaves the total unchanged.
+Retiring one application and standing up another is a deliberate platform decision, and it goes
+through the exception path like any other. An organization that genuinely wants net-of-retirements
+semantics writes `must-not-exceed-count` with today's count as the budget instead, and accepts
+that it will not name the offender.
+
+`must-not-exceed-count` is likewise a count of **declared instances of a declared asset class**,
+not a derived quality measure. It is exact, reproducible from the pinned registry export, and
+carries no aggregation choices, which is what disqualifies evolutionary metrics from gating. Both
+primitives pin the registry export version alongside the base and head commits.
+
+#### Asset identity, and what happens when the asset is not in the registry
+
+This is the crux of the whole rule class, so it is spelled out rather than assumed. The new
+application in a feature pull request is precisely the thing that is **not** in the registry yet,
+so a comparison defined purely over registry entries would see nothing and pass.
+
+The observation set at a commit is therefore the union of two sources, not one:
+
+1. **Registry entries** in the pinned export, keyed by their registration identity.
+2. **Planned asset resources** in the repository's infrastructure as code, keyed by a
+   provider-qualified address — the Terraform resource address, the Bicep symbolic name, the ARM
+   resource identifier — which is stable across plans and unique within its scope.
+
+A planned resource is joined to a registry entry by `registered-as` when the code carries the
+registration identity. When it does not — the normal case for a brand-new application, whose
+identity does not exist until it is applied — it keeps its **provisional** provider-qualified
+identity and is counted as an instance. That is what makes the new application observable at head
+and absent at base, and it is what `must-not-introduce` fires on. The finding cites the
+infrastructure-as-code `file:line`, because that is the evidence that actually exists.
+
+This also corrects the self-approval hole below to something more precise. Adding the new
+application to the registry in the same pull request does **not** defeat `must-not-introduce`,
+because a registry addition is itself a new identity at head. It defeats `must-reuse`, which asks
+only whether a referenced instance is registry-declared, and would happily answer yes. Both are
+closed by governing the registry as an input, but only one of them was ever at risk.
+
+#### Registry coverage is an assertion, not an assumption
+
+Pinning the export makes the evaluation **reproducible**. It does not make it **complete**, and
+the difference decides whether this rule class is honest. A stale registry that is merely missing
+rows still parses, still counts, and would silently return `PASS` — the exact failure the
+[absence-of-evidence rule](#fitness-function-types-and-which-may-gate) exists to prevent.
+
+So coverage is a declared property, not an inference. Each asset class in the registry carries an
+authoritative-coverage assertion naming the scope it claims to cover, the system of record it was
+exported from, and the export timestamp. The evaluator then behaves as follows:
+
+| Situation | Verdict |
+|---|---|
+| Coverage asserted, fresh, and a new instance is observed | `FAIL` — a positive observation |
+| Coverage asserted, fresh, no new instance observed | `PASS` |
+| Coverage assertion missing, stale beyond its declared window, or scope does not cover the change | `UNKNOWN`, with the reason named |
+| Instance observed that cannot be resolved to a provider or a class | `UNKNOWN` |
+
+Only a **positively observed** new or unregistered asset may fail. Membership that cannot be
+established is never read as evidence of absence, which means an under-maintained registry
+degrades this rule class to `UNKNOWN` and a visible coverage report — never to a green check.
 
 `must-obtain-capability-via` is the one that matters most, because it is what keeps this
 *architecture* rather than a prohibition list. A rule that only forbids leaves a developer with a
@@ -608,14 +703,22 @@ names the provider states the intended design and makes the remediation obvious.
 
 Note what is still absent: no primitive inspects a value, follows data, or reasons about control
 flow. That absence *is* the CodeQL boundary, and the four additions preserve it — counting
-declared instances of a declared asset class is not dataflow analysis. **Test A therefore holds
-unchanged.** Every operand is a declared asset class or a registry-resolved provider, both of
-which a human wrote into the model.
+declared instances of a declared asset class is not dataflow analysis.
 
-Test B holds too, and more comfortably than most structural rules manage. *"We are standing up
-another first-party application"* is not a borderline architecture question; it is among the most
-common items on a real architecture review board's agenda, and the remediation is a textbook
-design move: **reuse the existing one.**
+It would be an overclaim to say the two tests were untouched, so here is exactly what changed.
+**Test A's predicate clause is unchanged**: the primitive set is still closed, still finite, and
+still contains nothing statement-level. **Test A's selector clause was widened** to admit governed
+asset classes, capabilities, providers and tenants alongside the design elements it already
+admitted. That widening is safe for the same reason the original clause was: every one of those
+operands is a thing a human wrote into the model or the registry, so the compiler can still
+mechanically reject anything that is not there. **Test B's design-move list was extended** with
+reuse, consolidation and retirement, because the remediation for a proliferation finding is a
+design move that the original list simply did not name.
+
+Test B's substance holds comfortably, and more comfortably than most structural rules manage.
+*"We are standing up another first-party application"* is not a borderline architecture question;
+it is among the most common items on a real architecture review board's agenda, and the
+remediation is a textbook design move: **reuse the existing one.**
 
 ## Evaluation: complete graphs, delta reporting
 
@@ -651,7 +754,11 @@ A ratchet is not a predicate over one graph, so it is defined over a pinned pair
   provider version, and the element identity scheme, so a provider upgrade cannot masquerade as
   a regression.
 - **Merge-order safety.** Ratchets are re-evaluated at the merge-queue head, which is where
-  concurrent pull requests are reconciled.
+  concurrent pull requests are reconciled. This matters most for cardinality budgets: with
+  `must-not-exceed-count(first-party-app, team, 3)` and two already registered, two pull requests
+  each adding one are *individually* clean at three, and only the queue head sees four. That
+  reconciliation requires an enforced merge queue, or required checks configured to re-run on an
+  up-to-date branch; without one of the two, the guarantee is a scheduled sweep after the fact.
 - **Legitimate regressions.** A staged migration may honestly worsen a metric. That is a
   time-boxed migration budget approved through the exception path — never a silently raised
   threshold.
@@ -733,19 +840,28 @@ Stating the limits precisely is what makes the capability believable.
 
 - **Recall is bounded by what is in a repository.** An application created by clicking through a
   portal never appears in any pull request, so the gate cannot see it. The pull-request gate
-  covers the code-visible path; a **scheduled registry sweep** covers the rest. The difference
-  between them is published as its own report — *assets that exist but were never declared*. The
-  claim is never "the gate prevents creation"; it is "the gate prevents creation through the
-  reviewed path, and names the unreviewed path".
+  covers the code-visible path. Covering the rest needs a **live platform inventory** — the
+  identity provider's own list of applications, queried on a schedule — which is a *different
+  input* from the governed reuse registry and must not be confused with it. The registry says what
+  the organization has *sanctioned*; the inventory says what actually *exists*. The difference
+  between them is published as its own report: **assets that exist but were never declared.**
+  Without that connector the sweep sees only what the registry already admits, and the honest
+  claim shrinks to the code-visible path alone. The claim is never "the gate prevents creation";
+  it is "the gate prevents creation through the reviewed path, and names the unreviewed path".
 - **An unresolvable binding is `UNKNOWN`, not `PASS`.** If a client identifier in configuration
   cannot be resolved to a registry provider, the rule says it does not know. A proliferation rule
   that silently matched nothing would be the most dangerous rule in the catalog, because the
   metric it protects only moves in one direction.
-- **The self-approval hole bites hardest here.** A developer who adds their brand-new application
-  to the registry in the same pull request defeats the rule completely. The registry is therefore
-  a **governed input under its own `CODEOWNERS`**, exactly like `architecture/` and `design/`: a
-  registry addition is a policy change routed to the platform owner even when it arrives inside a
-  feature pull request. This is the existing mechanism, reused, not a new one.
+- **The self-approval hole bites here, though less than it first appears.** A developer who adds
+  their brand-new application to the registry in the same pull request does not defeat
+  `must-not-introduce`, because [the registry addition is itself a new identity at
+  head](#asset-identity-and-what-happens-when-the-asset-is-not-in-the-registry). It does defeat
+  `must-reuse`, which asks only whether a referenced instance is declared. The registry is
+  therefore a **governed input** under its own `CODEOWNERS` *and* the branch-protection
+  configuration described in [Repository layout and
+  ownership](#repository-layout-and-ownership): a registry addition is a policy change routed to
+  the platform owner even when it arrives inside a feature pull request. This is the existing
+  mechanism, reused, not a new one.
 - **Legitimate new assets exist.** A separate tenant, a compliance boundary, a data-residency
   requirement — each is a real reason for a genuinely new application. The rule never bans
   absolutely. It routes to the platform owner with a justification and an expiry date, which is
@@ -760,11 +876,18 @@ architecture rules on a blank page.**
 | Catalog rule | Asset class | Compiles to |
 |---|---|---|
 | One identity application per team | first-party application registration | `must-not-introduce(first-party-app)` + `must-obtain-capability-via(identity, team registered app)` |
-| One gateway per domain | API gateway or front door | `must-not-exceed-count(gateway, domain, 1)` |
-| One telemetry pipeline | logging and metrics sink | `must-reuse(telemetry-pipeline, org)` |
-| One feature-flag system | flag provider | `must-obtain-capability-via(feature-flags, declared provider)` |
+| One gateway per domain | API gateway or front door | `must-not-exceed-count(gateway, domain, 1)` + `must-reuse(gateway, domain)` |
+| One telemetry pipeline | logging and metrics sink | `must-not-exceed-count(telemetry-pipeline, org, 1)` + `must-reuse(telemetry-pipeline, org)` |
+| One feature-flag system | flag provider | `must-obtain-capability-via(feature-flags, declared provider)` + `must-not-exceed-count(flag-provider, org, 1)` |
 | One datastore per bounded context | database instance | `must-not-exceed-count(datastore, context, 1)` |
-| One authentication library | auth SDK | `must-reuse(auth-library, org)` |
+| One authentication library | auth SDK | `must-obtain-capability-via(authentication, declared library)` + `must-not-exceed-count(auth-library, org, 1)` |
+
+Note that the singleton rows need **two** primitives, not one. `must-reuse` on its own only
+requires that whatever is referenced is registry-declared — it is satisfied by ten registered
+telemetry pipelines. The cardinality bound is what makes it a singleton, and the reuse primitive
+is what makes an *unregistered* one fail. A catalog row whose name promises "one" and whose
+predicate does not bound the count is precisely the compilation-fidelity failure this product
+exists to prevent, so the catalog is held to the same standard as a compiled rule.
 
 Every row is the same shape: an asset class that is cheap to create once and expensive to own
 forever. Teams adopt by picking a row and naming their provider, so the free-form compiler is
@@ -773,21 +896,37 @@ concentrated.
 
 ### Carrying cost: turning the gate into a budget instrument
 
-Every proliferation finding publishes the recurring annual burden the change signs the
-organization up for: secret and certificate rotation, compliance and SDL review, tenant consent
-maintenance, on-call surface, and eventual deprecation work. The finding does not merely say
-*this violates a rule*; it says **this pull request adds roughly N engineer-hours per year,
-permanently, and here is the asset that already does this.**
+Every proliferation finding publishes the recurring annual burden the change is likely to sign
+the organization up for: secret and certificate rotation, compliance and SDL review, tenant
+consent maintenance, on-call surface, and eventual deprecation work. The finding does not merely
+say *this violates a rule*; it says **this pull request adds roughly N engineer-hours a year of
+ongoing effort exposure, for as long as the asset lives — and here is the asset that already does
+this.**
 
 That reframes the conversation from architectural preference — which developers are entitled to
 argue with — to committed operational spend, which is much harder to wave through. It also gives
 the organization the only architecture metric leadership has ever actually asked for: **net new
-shared platform assets per quarter, trending toward zero**, with an attached cost avoided.
+shared platform assets per quarter, trending toward zero**, with the effort exposure that trend
+represents.
 
-Two honesty constraints. The cost is a **declared property of the asset class**, set by the
-platform owner in the registry, not a number ArchGuard invents. And it is reported as a range
-with its basis shown, because a single confident figure invites an argument about the figure
-instead of about the architecture.
+Four honesty constraints, because this is the number most likely to be quoted back:
+
+- **It is a declared property of the asset class**, set by the platform owner in the registry, not
+  a figure ArchGuard invents. It is reported with its **basis, its author and the date it was
+  last reviewed**, and a cost older than its review window is shown as stale.
+- **It is reported as a range**, because a single confident figure invites an argument about the
+  figure instead of about the architecture.
+- **It is class-typical exposure, not measured marginal cost.** The fortieth application does not
+  cost exactly what the first did, and ArchGuard has not measured either. The report says
+  *potential annual effort exposure*, never *this will cost*.
+- **Cost never gates.** The verdict is decided entirely by the structural finding — this asset was
+  introduced and a registered one already provides the capability — with cost attached as context
+  for the human reading the report. A gate whose threshold is an estimate is a gate that can be
+  argued down.
+
+The same discipline applies to the trend. The scorecard reports **effort exposure not taken on**,
+framed as a counterfactual and labelled as one. It never claims savings, because the organization
+does not know what it would have done in the absence of the gate.
 
 ### The policy resolution trace
 
@@ -825,7 +964,7 @@ evidence: [ asset-registry, iac-plan, service-config ]
 asset_class: first-party-app
 capability: identity
 provider: registry:team-registered-app
-carrying_cost: 20-30h/year  # declared by the platform owner; published in every finding
+carrying_cost: 20-30h/year  # class-typical exposure declared on the asset class; context, never the verdict
 review_by: 2026-12-31       # mandatory, so stale rules surface instead of rotting
 body: >
   A feature must not introduce a new first-party application. It authenticates through
@@ -893,10 +1032,27 @@ governance/
   baseline/                            # ratchet baselines and recorded debt
 ```
 
-`CODEOWNERS` maps each directory to its owner, so a team structurally cannot edit another team's
-rules or the org tier. `registry/` is owned by the platform team that owns each asset class,
-which is what stops a developer from approving their own new asset in the pull request that
-creates it.
+`CODEOWNERS` maps each directory to its owner, and `registry/` is owned by the platform team that
+owns each asset class.
+
+That mapping alone is not an enforcement mechanism, and the difference matters, because the
+self-approval hole is exactly what it is meant to close. On GitHub, `CODEOWNERS` only *requests*
+review; it blocks nothing by itself. The governed-input guarantee is only real when the
+configuration underneath it is:
+
+- A branch ruleset requiring **code-owner approval** on these paths, with **at least one approving
+  review from someone other than the author**.
+- **Stale reviews dismissed** on new commits, so an approval cannot be harvested and then
+  modified.
+- **Bypass restricted** to a named, audited set of principals — an unrestricted admin bypass makes
+  every claim on this page conditional.
+- Write access to the systems of record for `registry/` and `architecture/` held by their owning
+  teams, not by every contributor.
+
+Stated honestly: ArchGuard depends on the host's branch-protection configuration, and it verifies
+what it can. The compiled bundle records whether the required-review configuration was in force
+when the gate ran, and a report generated under a weaker configuration says so instead of implying
+a guarantee it did not have.
 
 ### Five verdicts, and the move that defeats every gate
 
@@ -934,8 +1090,8 @@ governance event rather than an absence.
 |---|---|---|
 | **Pull-request check and inline review** | Developer | Verdict, the rule quoted in the team's own words, `file:line` evidence and graph path, policy resolution trace, design-level remediation, exception request link |
 | **SARIF and JSON artifact** | Tooling | Renders natively in the Files changed view and the Checks tab |
-| **Carrying-cost statement** | Developer, team lead, finance | Attached to every proliferation finding: the recurring annual burden this change commits the organization to — secret and certificate rotation, compliance and SDL review, tenant consent, on-call surface, eventual deprecation. Stated as a range with its basis, never as a single confident number |
-| **Shared-asset inventory and trend** | ARB, platform owners, leadership | Assets per class per team over time, net new per quarter, carrying cost avoided, and the undeclared-asset gap between the registry sweep and the gate |
+| **Carrying-cost statement** | Developer, team lead, finance | Attached to every proliferation finding: the class-typical annual effort exposure this change takes on — secret and certificate rotation, compliance and SDL review, tenant consent, on-call surface, eventual deprecation. A range with its basis, author and review date, never a single confident number, and never the reason for the verdict |
+| **Shared-asset inventory and trend** | ARB, platform owners, leadership | Assets per class per team over time, net new per quarter, effort exposure not taken on (labelled as the counterfactual it is), and the undeclared-asset gap between the live inventory and the registry |
 | **Team scorecard** | Team lead | Own-rule and org-rule pass rates, active exceptions with expiry, recurring violations, ratchet trends, recorded debt |
 | **Org and domain scorecard** | ARB, leadership | Risk posture by domain and severity, blocked high-risk changes, drift backlog |
 | **Drift and trend report** | Architects | Scheduled sweep: plan and live state versus declared model, coupling trend, stale artifacts |
@@ -971,19 +1127,23 @@ as an evaluated verdict.
 
 - **Phase 0 — Scope freeze.** Ratify the expressibility test, the non-goals and the capability
   matrix; fix the rule schema, the evaluator contract, and both halves of the primitive set.
-- **Phase 1 — The proliferation loop.** The wedge, end to end, for **one** asset class: the
-  registry importer, infrastructure-plan and service-configuration evidence, the
-  `must-not-introduce` and `must-obtain-capability-via` primitives, one catalog rule compiled
-  from English and human-approved, the carrying-cost statement, and a pull-request report with
+- **Phase 1 — Correctness scaffolding.** Base-and-head evaluation, finding-set deltas, pinned
+  dependency sets, the five verdicts and `UNKNOWN` handling, merge-queue re-evaluation. This is
+  deliberately first rather than later: every ratchet, including `must-not-introduce`, is defined
+  over a **pinned base/head pair**, so a proliferation gate built before this exists would be a
+  demo rather than a gate.
+- **Phase 2 — The proliferation loop.** The wedge, end to end, for **one** asset class: the
+  registry importer with its coverage and freshness assertion, infrastructure-plan and
+  service-configuration evidence, the asset identity scheme including provisional identities, the
+  `must-not-introduce` and `must-obtain-capability-via` primitives, one catalog rule compiled from
+  English and human-approved, the effort-exposure statement, and a pull-request report with
   `file:line` evidence and the name of the asset that should have been reused.
-- **Phase 2 — Pack 1 MVP.** One language, one service: design declarations, the design-level
+- **Phase 3 — Pack 1 MVP.** One language, one service: design declarations, the design-level
   graph builder over existing parsers, five or six structural primitives, roughly ten catalog
   rules across layering and dependency inversion, fixtures in CI, and the same report surface.
-- **Phase 3 — Pack 2 MVP.** Tiers T0 to T4, the scope resolver, conjunctive inheritance with the
+- **Phase 4 — Pack 2 MVP.** Tiers T0 to T4, the scope resolver, conjunctive inheritance with the
   unprovable-override path, the policy resolution trace, structural and realization evaluators
   gating, and the expiring exception path.
-- **Phase 4 — Correctness scaffolding.** Base-and-head evaluation, finding-set deltas, pinned
-  dependency sets, `UNKNOWN` handling, merge-queue re-evaluation.
 - **Phase 5 — Reports.** SARIF, team and org scorecards, the shared-asset inventory and trend,
   exception register, rule health, ADR drafting.
 - **Phase 6 — Beyond the pull request.** Scheduled sweeps against live state and the live asset
@@ -1017,7 +1177,7 @@ as an evaluated verdict.
 ## Success metrics
 
 Blocked high-severity violations · **net new shared platform assets per quarter, trending toward
-zero** · carrying cost avoided per quarter · registry coverage, meaning the share of live assets
+zero** · annual effort exposure not taken on, reported as a counterfactual · registry coverage, meaning the share of live assets
 that are declared · false-positive rate per rule against the agreed threshold ·
 `UNKNOWN` and vacuously-true rule counts · share of rules taken from the catalog versus bespoke ·
 exception count and mean age to expiry · recorded debt burn-down per team · reduction in manual

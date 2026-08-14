@@ -1,5 +1,8 @@
 # Idea 4: Policy Playground and PR Conversation Simulator
 
+> **Superseded in part by [Idea 0, the final idea](./00-final-idea.md).** Kept as detail and demo
+> material. Where the two disagree on scope, tiers, verdicts or what may gate, Idea 0 wins.
+
 ## One-line pitch
 
 A live sandbox and PR bot where architects and judges type natural-language policies, mutate architecture scenarios, ask architecture questions, and instantly see which designs pass or fail.
