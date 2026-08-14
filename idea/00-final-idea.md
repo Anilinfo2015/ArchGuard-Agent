@@ -883,6 +883,7 @@ body: >
 ```
 architecture/                          # System level: Structurizr/C4 DSL, trust boundaries
 design/                                # Design level: layers, ports, stereotypes, aggregates, legacy tags
+registry/                              # Capability registry level: shared assets, owners, carrying costs
 governance/
   fitness/{org,domain,team,service}/   # Pack 2 rules
   design-rules/<team>/                 # Pack 1 rules
@@ -893,7 +894,9 @@ governance/
 ```
 
 `CODEOWNERS` maps each directory to its owner, so a team structurally cannot edit another team's
-rules or the org tier.
+rules or the org tier. `registry/` is owned by the platform team that owns each asset class,
+which is what stops a developer from approving their own new asset in the pull request that
+creates it.
 
 ### Five verdicts, and the move that defeats every gate
 
@@ -931,6 +934,8 @@ governance event rather than an absence.
 |---|---|---|
 | **Pull-request check and inline review** | Developer | Verdict, the rule quoted in the team's own words, `file:line` evidence and graph path, policy resolution trace, design-level remediation, exception request link |
 | **SARIF and JSON artifact** | Tooling | Renders natively in the Files changed view and the Checks tab |
+| **Carrying-cost statement** | Developer, team lead, finance | Attached to every proliferation finding: the recurring annual burden this change commits the organization to — secret and certificate rotation, compliance and SDL review, tenant consent, on-call surface, eventual deprecation. Stated as a range with its basis, never as a single confident number |
+| **Shared-asset inventory and trend** | ARB, platform owners, leadership | Assets per class per team over time, net new per quarter, carrying cost avoided, and the undeclared-asset gap between the registry sweep and the gate |
 | **Team scorecard** | Team lead | Own-rule and org-rule pass rates, active exceptions with expiry, recurring violations, ratchet trends, recorded debt |
 | **Org and domain scorecard** | ARB, leadership | Risk posture by domain and severity, blocked high-risk changes, drift backlog |
 | **Drift and trend report** | Architects | Scheduled sweep: plan and live state versus declared model, coupling trend, stale artifacts |
@@ -965,22 +970,28 @@ as an evaluated verdict.
 ## Delivery phases
 
 - **Phase 0 — Scope freeze.** Ratify the expressibility test, the non-goals and the capability
-  matrix; fix the rule schema, the evaluator contract and the primitive set.
-- **Phase 1 — Pack 1 MVP.** One language, one service: design declarations, the design-level
-  graph builder over existing parsers, five or six primitives, roughly ten catalog rules across
-  layering and dependency inversion, fixtures in CI, and a pull-request report with `file:line`
-  evidence.
-- **Phase 2 — Pack 2 MVP.** Tiers T0 to T4, the scope resolver, conjunctive inheritance with the
+  matrix; fix the rule schema, the evaluator contract, and both halves of the primitive set.
+- **Phase 1 — The proliferation loop.** The wedge, end to end, for **one** asset class: the
+  registry importer, infrastructure-plan and service-configuration evidence, the
+  `must-not-introduce` and `must-obtain-capability-via` primitives, one catalog rule compiled
+  from English and human-approved, the carrying-cost statement, and a pull-request report with
+  `file:line` evidence and the name of the asset that should have been reused.
+- **Phase 2 — Pack 1 MVP.** One language, one service: design declarations, the design-level
+  graph builder over existing parsers, five or six structural primitives, roughly ten catalog
+  rules across layering and dependency inversion, fixtures in CI, and the same report surface.
+- **Phase 3 — Pack 2 MVP.** Tiers T0 to T4, the scope resolver, conjunctive inheritance with the
   unprovable-override path, the policy resolution trace, structural and realization evaluators
   gating, and the expiring exception path.
-- **Phase 3 — Correctness scaffolding.** Base-and-head evaluation, finding-set deltas, pinned
+- **Phase 4 — Correctness scaffolding.** Base-and-head evaluation, finding-set deltas, pinned
   dependency sets, `UNKNOWN` handling, merge-queue re-evaluation.
-- **Phase 4 — Reports.** SARIF, team and org scorecards, exception register, rule health, ADR
-  drafting.
-- **Phase 5 — Beyond the pull request.** Scheduled sweep against live state, operational metric
-  bindings as trends, staleness types, ARB review packet.
-- **Phase 6 — Adoption.** Starter catalog, baselines and recorded debt for legacy code,
-  advisory-first rollout, false-positive governance through proposed demotion pull requests.
+- **Phase 5 — Reports.** SARIF, team and org scorecards, the shared-asset inventory and trend,
+  exception register, rule health, ADR drafting.
+- **Phase 6 — Beyond the pull request.** Scheduled sweeps against live state and the live asset
+  registry, the undeclared-asset gap report, operational metric bindings as trends, staleness
+  types, ARB review packet.
+- **Phase 7 — Adoption.** The full reuse-over-rebuild catalog, baselines and recorded debt for
+  legacy code, advisory-first rollout, false-positive governance through proposed demotion pull
+  requests.
 
 ## Risks and mitigations
 
@@ -997,15 +1008,50 @@ as an evaluated verdict.
 | A noisy rule destroys trust in the gate | False-positive rate is a first-class metric, and demotion is a proposed, human-merged pull request rather than an automatic relaxation |
 | Over-claiming that architecture review is automated | The explicit holistic and judgement type, routed to the ARB with a prepared packet |
 | **A developer relabels their way past a rule** | Declarations are governed inputs owned separately from implementation; every classification change is diffed and reported as a governance event |
+| **A developer registers their brand-new asset in the same pull request** | The asset registry is a governed input under its own `CODEOWNERS`, not developer-editable. A registry addition is a policy change routed to the platform owner even when it arrives inside a feature pull request — the same mechanism that closes the relabelling hole, reused |
+| **Assets created outside any repository are invisible to the gate** | Recall is published rather than claimed. The pull-request gate covers the code-visible path only; the scheduled registry sweep covers portal and click-ops creation, and the difference between them ships as its own report — *assets that exist but were never declared* |
 | **Compilation fidelity is below what architects will trust** | The nearest published work reports a 82.2% positive-test pass rate in a narrower domain; review, fixtures, `UNKNOWN` and refusal are load-bearing, and fidelity is never claimed as solved |
-| **Name collision** with the established open-source ArchGuard project **and with a live "ArchGuard AI Reviewer" Marketplace action** | Rename before public release; credit the prior art rather than obscure it. See [Idea 9](./09-prior-art-and-positioning.md) |
+| **Name collision** with the established open-source ArchGuard project **and with a live "ArchGuard AI Reviewer" Marketplace action** | **Resolved: the product is renamed to Extant.** See "The name" below and [Idea 9](./09-prior-art-and-positioning.md) |
+| **The registry does not exist, or is badly maintained** | Every proliferation rule resolves to `UNKNOWN` and says why. The tool never infers a registry from code, because a guessed inventory would make the one metric it publishes untrustworthy |
 
 ## Success metrics
 
-Blocked high-severity violations · false-positive rate per rule against the agreed threshold ·
+Blocked high-severity violations · **net new shared platform assets per quarter, trending toward
+zero** · carrying cost avoided per quarter · registry coverage, meaning the share of live assets
+that are declared · false-positive rate per rule against the agreed threshold ·
 `UNKNOWN` and vacuously-true rule counts · share of rules taken from the catalog versus bespoke ·
 exception count and mean age to expiry · recorded debt burn-down per team · reduction in manual
 ARB pull-request reviews · rules overdue for `review_by`.
+
+## The name
+
+**Decided: Extant.**
+
+Two projects already ship as ArchGuard — `archguard/archguard`, the established Thoughtworks-
+initiated governance workbench, and `archguard-labs/action`, an "ArchGuard AI Reviewer" on the
+GitHub Marketplace whose design this document explicitly argues against. Keeping the name means
+competing for search results against the first while being mistaken for the second. It was the
+cheapest thing to change and the most expensive thing to leave wrong, so it is now changed.
+
+**Extant** — *still in existence; surviving.* It names the question the gate asks before every
+addition: *does an approved instance of this already exist?* Three reasons it is the right word:
+
+- It encodes the wedge rather than the mechanism. `Guard`, `Lint`, `Check` and `Sentry` all
+  describe a security or lint posture, which is exactly the drift the non-goals exist to prevent.
+- It is a positive frame. The tool's answer is not *forbidden*, it is *we already have one, use
+  it.*
+- It is searchable and unclaimed in this domain: no architecture, governance or code-analysis
+  project ships under it.
+
+Runners-up, recorded so the decision can be revisited rather than relitigated: *Precedent*, too
+generic to search; *Lintel*, architecturally apt but already used by a video decoder and, worse,
+by a config **linter**; *Decisis*, distinctive but obscure, and an adjacent LLM project already
+uses *stare decisis* for engineering decision rules.
+
+The rename is mechanical and deliberately deferred to its own change: the package, the CLI entry
+point, the action, the rule-ID prefixes and the prose in this pack all move together, or the
+history becomes unreadable. Until then, `ArchGuard-Agent` remains the working name in this
+document.
 
 ## Open decisions
 
@@ -1018,5 +1064,10 @@ ARB pull-request reviews · rules overdue for `review_by`.
    how the scope resolver keys rules.
 4. **Advisory-first or gating from day one** for Pack 1.
 5. **Where reports live:** the pull-request check only, or also a cross-repository dashboard.
-6. **The name.** Two projects already ship under it, one of them an AI architecture reviewer on
-   the GitHub Marketplace. This is now a decision with a deadline, not an open question.
+6. **Which asset class ships first**, and whose registry export is the reference format for it.
+7. **Whether carrying cost is a required field** on every proliferation rule, or optional with a
+   default of "unpriced".
+
+---
+
+Every architecture review says yes. This one remembers it already said yes thirty-nine times.
