@@ -18,7 +18,6 @@ window.ArchGuardData = (function () {
 
   /* ---- The multi-tier scope model (idea 00, Component 2) ---- */
   const tiers = [
-    { id: "T0", name: "Regulatory", owner: "Security & Compliance", scope: "Company-wide mandates: data residency, PCI, isolation", change: "Formal board review — no exception, ever", color: "T0" },
     { id: "T1", name: "Organization", owner: "Enterprise Architecture Board", scope: "Every system in the company", change: "Enterprise architecture review", color: "T1" },
     { id: "T2", name: "Department", owner: "Department architect", scope: "One department / business unit (e.g. Payments)", change: "Department architecture review", color: "T2" },
     { id: "T3", name: "Sub-department", owner: "Sub-department lead", scope: "A group of teams within a department (e.g. Checkout)", change: "Sub-department review", color: "T3" },
@@ -51,18 +50,18 @@ window.ArchGuardData = (function () {
 
   const modeBadge = (m) => (m === "blocking" ? "block" : "advisory");
 
-  /* ---- Rule catalog: Fitness Functions (HLD) + Design Rules (LLD) ---- */
+  /* ---- Architecture rules: Fitness Functions (HLD) + Design Rules (LLD) ---- */
   const rules = [
     /* ----- HLD : Fitness Functions ----- */
     {
-      id: "REG-PCI-000", level: "hld", pack: "Fitness Functions", tier: "T0", type: "structural",
-      title: "Cardholder data must never leave the PCI zone",
-      owner: "security", scope: ["tag:pci", "zone:cardholder-data"], severity: "high", mode: "blocking",
-      evidence: "architecture-model + terraform-plan", review_by: "2026-06-30", status: "active",
+      id: "ORG-ISO-000", level: "hld", pack: "Fitness Functions", tier: "T1", type: "structural",
+      title: "Sensitive data must stay inside its owning domain",
+      owner: "arb", scope: ["boundary:payments-data"], severity: "high", mode: "blocking",
+      evidence: "architecture-model", review_by: "2026-09-30", status: "active",
       primitive: "must-reside-in",
-      body: "Any container that reads, stores or forwards cardholder data must reside inside the declared PCI trust boundary. No path may carry that data across the boundary.",
-      predicate: [["k","element"],["t"," where "],["p","dataClass == \"cardholder\""],["t","\n  "],["k","must-reside-in"],["t"," "],["s","zone:cardholder-data"]],
-      fixtures: { pass: "Tokenizer resides in cardholder-data zone", fail: "Analytics job in analytics-zone reads raw PAN" },
+      body: "A container that reads, stores or forwards payment data must stay inside the boundary of the domain that owns it. No dependency may carry that data across a domain boundary.",
+      predicate: [["k","element"],["t"," where "],["p","dataClass == \"payment\""],["t","\n  "],["k","must-reside-in"],["t"," "],["s","boundary:payments-data"]],
+      fixtures: { pass: "Tokenizer stays inside the payments boundary", fail: "An analytics job outside the boundary reads raw payment data" },
       health: { fires: 0, fp: 0.0, unknown: 0.02, vacuous: false, overdue: false, last: "—" },
     },
     {
@@ -274,7 +273,7 @@ window.ArchGuardData = (function () {
         { rule: "ORG-DATA-001", v: "PASS" }, { rule: "ORG-GW-002", v: "PASS" },
         { rule: "PAY-014", v: "PASS" }, { rule: "DR-DIP-101", v: "PASS" },
         { rule: "DR-LAYER-102", v: "PASS" },
-        { rule: "REG-PCI-000", v: "SKIPPED", why: "Out of scope — no cardholder-data element touched" },
+        { rule: "ORG-ISO-000", v: "SKIPPED", why: "Out of scope — no payment-data element touched" },
         { rule: "DR-CYCLE-103", v: "SKIPPED", why: "Out of scope — inventory service unchanged" },
       ],
     },
@@ -297,7 +296,7 @@ window.ArchGuardData = (function () {
         { rule: "ORG-DATA-001", v: "PASS" }, { rule: "ORG-GW-002", v: "PASS" },
         { rule: "DR-DIP-101", v: "PASS" },
         { rule: "DR-PORT-104", v: "UNKNOWN", why: "Persistence port not resolvable — provider could not see symbol binding" },
-        { rule: "REG-PCI-000", v: "SKIPPED", why: "Out of scope — no cardholder-data element touched" },
+        { rule: "ORG-ISO-000", v: "SKIPPED", why: "Out of scope — no payment-data element touched" },
       ],
     },
     {
@@ -333,7 +332,7 @@ window.ArchGuardData = (function () {
         { rule: "DR-CYCLE-103", v: "FAIL", why: "stock → ledger → stock cycle formed (evidence spans unchanged files)" },
         { rule: "DR-DIP-101", v: "PASS" }, { rule: "DR-EXPORT-105", v: "UNKNOWN", why: "Selector matched 0 elements — vacuously true, reported not passed" },
         { rule: "ORG-DATA-001", v: "PASS" },
-        { rule: "REG-PCI-000", v: "ERROR", why: "Terraform plan provider crashed — check itself blocks, never silently green" },
+        { rule: "ORG-ISO-000", v: "ERROR", why: "Architecture model failed to load — the check itself blocks, never silently green" },
       ],
     },
   ];
@@ -359,7 +358,7 @@ window.ArchGuardData = (function () {
     "what is the blast radius of removing the api gateway?": {
       text: "Removing <b>API Gateway</b> exposes <b>3 internal containers</b> directly to the internet and breaks fitness function <span class='inline-code'>ORG-GW-002</span> (must-cross-via). Everything currently entering through the gateway loses its single enforcement point for auth, rate-limiting and TLS termination.",
       ascii: "  Internet\n     │            ✗ removed\n  ┌──┴───┐   ┌───────────┐\n  │ Gateway│──│  (was here) │\n  └──┬───┘   └───────────┘\n  ┌──┴──────────────┐\n  ▼        ▼         ▼\nOrders  Checkout  Inventory   ← now internet-facing",
-      foot: "Impacted rules: ORG-GW-002 (block), REG-PCI-000 (block). 3 containers, 5 declared relationships affected.",
+      foot: "Impacted rules: ORG-GW-002 (block), ORG-ISO-000 (block). 3 containers, 5 declared relationships affected.",
     },
     "where is the single point of failure?": {
       text: "The <b>Profile</b> service is a shared synchronous dependency for <b>Checkout</b>, <b>Orders</b> and <b>Account</b>. If Checkout is allowed to call it synchronously (see <span class='inline-code'>PAY-014</span>), a Profile outage stops checkout. The declared architecture routes this through a local event-fed projection to remove the SPOF.",

@@ -137,7 +137,7 @@
     ]},
     { group: "For architects", items: [
       { file: "author.html", label: "Author a rule", ico: "bi-pencil-square", badge: "AI" },
-      { file: "catalog.html", label: "Rule catalog", ico: "bi-collection" },
+      { file: "catalog.html", label: "Architecture rules", ico: "bi-collection" },
       { file: "model.html", label: "Architecture model", ico: "bi-diagram-2" },
       { file: "scorecards.html", label: "Scorecards", ico: "bi-clipboard-data" },
       { file: "exceptions.html", label: "Architecture violations", ico: "bi-shield-exclamation" },

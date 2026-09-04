@@ -3,54 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ArchGuard · Rule catalog</title>
+  <title>ArchGuard · Architecture rules</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <link href="./portal.css" rel="stylesheet" />
 </head>
 <body>
   <main class="ag-content" id="ag-content"
-        x-data="{ d: window.ArchGuardData, tab: 'all', sel: null,
-                  rows() { return this.d.rules.filter(r => this.tab==='all' || r.level===this.tab); },
+        x-data="{ d: window.ArchGuardData, sel: null,
+                  levels: window.ArchGuardData.tiers.filter(t => t.id !== 'X'),
+                  rulesFor(id) { return this.d.rules.filter(r => r.tier === id); },
                   open(r) { this.sel = r; new bootstrap.Modal(document.getElementById('ruleModal')).show(); } }">
 
     <div class="ag-eyebrow mb-1">For architects</div>
-    <h1 class="h3 fw-bold mb-2">Rule catalog</h1>
-    <p class="text-secondary mb-3" style="max-width: 72ch;">
-      Every rule is versioned governance-as-code: a stable ID cited in every report, an owner matched to
-      CODEOWNERS, the compiled predicate, and the original prose. Click a row to see the detail.
+    <h1 class="h3 fw-bold mb-2">Architecture rules</h1>
+    <p class="text-secondary mb-4" style="max-width: 72ch;">
+      Every architecture rule is stored as code — a stable ID, an owner, the compiled check and the
+      original plain-English sentence. They're grouped by the level they apply at: a rule higher up
+      cascades to everything beneath it. Click a rule to see the detail.
     </p>
 
-    <ul class="nav nav-pills mb-3">
-      <li class="nav-item"><button class="nav-link" :class="tab==='all' && 'active'" @click="tab='all'">All rules</button></li>
-      <li class="nav-item"><button class="nav-link" :class="tab==='hld' && 'active'" @click="tab='hld'">Fitness Functions · HLD</button></li>
-      <li class="nav-item"><button class="nav-link" :class="tab==='lld' && 'active'" @click="tab='lld'">Design Rules · LLD</button></li>
-    </ul>
-
-    <div class="card">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr><th>ID</th><th>Title</th><th>Level</th><th>Tier</th><th>Mode</th><th>Review by</th></tr>
-          </thead>
-          <tbody>
-            <template x-for="r in rows()" :key="r.id">
-              <tr class="ag-clickable" @click="open(r)">
-                <td class="font-monospace small" x-text="r.id"></td>
-                <td>
-                  <div x-text="r.title"></div>
-                  <div class="small text-secondary" x-text="r.pack + ' · ' + r.type"></div>
-                </td>
-                <td x-html="window.AG.levelBadge(r.level)"></td>
-                <td x-html="window.AG.tierBadge(r.tier)"></td>
-                <td x-html="window.AG.modeBadge(r.mode)"></td>
-                <td class="font-monospace small" x-text="r.review_by"></td>
-              </tr>
+    <template x-for="(lvl, idx) in levels" :key="lvl.id">
+      <div class="mb-3" :style="`margin-left:${idx * 1.1}rem`">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge text-bg-primary" x-text="lvl.name"></span>
+          <span class="small text-secondary" x-text="lvl.owner"></span>
+          <span class="small text-secondary ms-auto" x-text="rulesFor(lvl.id).length + (rulesFor(lvl.id).length === 1 ? ' rule' : ' rules')"></span>
+        </div>
+        <div class="card" x-show="rulesFor(lvl.id).length">
+          <div class="list-group list-group-flush">
+            <template x-for="r in rulesFor(lvl.id)" :key="r.id">
+              <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-2 flex-wrap" @click="open(r)">
+                <span class="font-monospace small text-secondary" x-text="r.id"></span>
+                <span class="flex-grow-1 text-start" x-text="r.title"></span>
+                <span x-html="window.AG.levelBadge(r.level)"></span>
+                <span x-html="window.AG.modeBadge(r.mode)"></span>
+              </button>
             </template>
-          </tbody>
-        </table>
+          </div>
+        </div>
+        <div class="small text-secondary fst-italic ms-1" x-show="!rulesFor(lvl.id).length">No rules at this level yet.</div>
       </div>
-    </div>
+    </template>
 
     <!-- Detail modal -->
     <div class="modal fade" id="ruleModal" tabindex="-1">
