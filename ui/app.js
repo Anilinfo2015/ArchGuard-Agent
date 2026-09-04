@@ -815,12 +815,12 @@
   /* =======================================================================
      view registry + shared bits
      ======================================================================= */
-  var BUILD = {
-    "architect/overview": ArchOverview, "architect/author": ArchAuthor, "architect/catalog": ArchCatalog,
-    "architect/model": ArchModel, "architect/scorecards": ArchScorecards, "architect/exceptions": ArchExceptions,
-    "architect/health": ArchHealth,
-    "developer/prchecks": DevPR, "developer/iterate": DevIterate, "developer/ask": DevAsk, "developer/myscore": DevScore,
-  };
+  var BUILD = new Map([
+    ["architect/overview", ArchOverview], ["architect/author", ArchAuthor], ["architect/catalog", ArchCatalog],
+    ["architect/model", ArchModel], ["architect/scorecards", ArchScorecards], ["architect/exceptions", ArchExceptions],
+    ["architect/health", ArchHealth],
+    ["developer/prchecks", DevPR], ["developer/iterate", DevIterate], ["developer/ask", DevAsk], ["developer/myscore", DevScore],
+  ]);
   function pageHead(title, sub) {
     return '<div class="page-head"><div class="eyebrow">' + (state.role === "architect" ? "Architect" : "Developer") + " · " + esc(D.product.tagline) + '</div><h1>' + esc(title) + '</h1><p class="sub">' + esc(sub) + "</p></div>";
   }
@@ -834,7 +834,7 @@
     var view = $("#view");
     if (state.view === "landing") { view.innerHTML = Landing(); window.scrollTo(0, 0); return; }
     var key = state.role + "/" + state.view;
-    var build = Object.prototype.hasOwnProperty.call(BUILD, key) ? BUILD[key] : null;
+    var build = BUILD.get(key);
     var out = typeof build === "function" ? build() : "<div class='emptybox'>Not found</div>";
     if (typeof out === "string") { view.innerHTML = out; }
     else { view.innerHTML = out.html; if (out.wire) out.wire(view); }
