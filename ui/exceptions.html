@@ -11,11 +11,12 @@
 <body>
   <main class="ag-content" id="ag-content" x-data="{ ex: window.ArchGuardData.exceptions }">
     <div class="ag-eyebrow mb-1">For architects</div>
-    <h1 class="h3 fw-bold mb-2">Exception register</h1>
+    <h1 class="h3 fw-bold mb-2">Architecture violations</h1>
     <p class="text-secondary mb-3" style="max-width: 74ch;">
-      Every deviation is ADR-backed, time-boxed and self-terminating. When an exception expires the
-      suppressed finding comes back on its own — narrowing scope is a relaxation you can see, not a
-      quiet edit to the rule.
+      Known violations the team has accepted for now — each one is written down, owned, backed by an
+      ADR, and given a date by which it must be fixed. When that date passes, the violation comes back
+      as a hard failure and blocks the next pull request that touches it. Nothing is quietly waved
+      through.
     </p>
 
     <div class="card">

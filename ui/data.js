@@ -18,11 +18,12 @@ window.ArchGuardData = (function () {
 
   /* ---- The multi-tier scope model (idea 00, Component 2) ---- */
   const tiers = [
-    { id: "T0", name: "Regulatory", owner: "Security + ARB", scope: "Everything: data residency, PCI, isolation", change: "Formal ARB — no exception, ever", color: "T0" },
-    { id: "T1", name: "Org", owner: "Architecture Review Board", scope: "All systems", change: "ARB review", color: "T1" },
-    { id: "T2", name: "Domain", owner: "Domain architect", scope: "One domain / bounded-context group", change: "Domain review", color: "T2" },
-    { id: "T3", name: "Team", owner: "Owning team", scope: "Systems & containers the team owns", change: "Normal team pull request", color: "T3" },
-    { id: "T4", name: "Service", owner: "Service owner", scope: "One service / one repository", change: "Service owner pull request", color: "T4" },
+    { id: "T0", name: "Regulatory", owner: "Security & Compliance", scope: "Company-wide mandates: data residency, PCI, isolation", change: "Formal board review — no exception, ever", color: "T0" },
+    { id: "T1", name: "Organization", owner: "Enterprise Architecture Board", scope: "Every system in the company", change: "Enterprise architecture review", color: "T1" },
+    { id: "T2", name: "Department", owner: "Department architect", scope: "One department / business unit (e.g. Payments)", change: "Department architecture review", color: "T2" },
+    { id: "T3", name: "Sub-department", owner: "Sub-department lead", scope: "A group of teams within a department (e.g. Checkout)", change: "Sub-department review", color: "T3" },
+    { id: "T4", name: "Team", owner: "Owning team", scope: "The services a team owns", change: "Normal team pull request", color: "T4" },
+    { id: "T5", name: "Service", owner: "Service owner", scope: "One service / one repository", change: "Service owner pull request", color: "T5" },
     { id: "X", name: "Exception", owner: "Named approver", scope: "One rule, one scope, one expiry", change: "ADR-backed, time-boxed, self-terminating", color: "X" },
   ];
 
@@ -120,7 +121,7 @@ window.ArchGuardData = (function () {
       health: { fires: 4, fp: 0.0, unknown: 0.0, vacuous: false, overdue: false, last: "12m ago" },
     },
     {
-      id: "SVC-INV-021", level: "hld", pack: "Fitness Functions", tier: "T4", type: "operational",
+      id: "SVC-INV-021", level: "hld", pack: "Fitness Functions", tier: "T5", type: "operational",
       title: "Inventory service fan-out must not exceed 5",
       owner: "inventory", scope: ["service:Inventory"], severity: "medium", mode: "advisory",
       evidence: "architecture-model (trend)", review_by: "2026-10-31", status: "active",
@@ -133,7 +134,7 @@ window.ArchGuardData = (function () {
 
     /* ----- LLD : Design Rules ----- */
     {
-      id: "DR-DIP-101", level: "lld", pack: "Design Rules", tier: "T3", type: "structural",
+      id: "DR-DIP-101", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
       title: "Domain layer must depend only on abstractions",
       owner: "payments", scope: ["layer:domain", "service:Checkout API"], severity: "high", mode: "blocking",
       evidence: "dependency-cruiser / ArchUnit", review_by: "2026-11-30", status: "active",
@@ -144,7 +145,7 @@ window.ArchGuardData = (function () {
       health: { fires: 5, fp: 0.0, unknown: 0.04, vacuous: false, overdue: false, last: "40m ago" },
     },
     {
-      id: "DR-LAYER-102", level: "lld", pack: "Design Rules", tier: "T3", type: "structural",
+      id: "DR-LAYER-102", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
       title: "Controllers may not depend on repositories directly",
       owner: "payments", scope: ["layer:controller", "service:Checkout API"], severity: "high", mode: "blocking",
       evidence: "dependency-cruiser / ArchUnit", review_by: "2026-11-30", status: "active",
@@ -155,7 +156,7 @@ window.ArchGuardData = (function () {
       health: { fires: 8, fp: 0.12, unknown: 0.0, vacuous: false, overdue: false, last: "55m ago" },
     },
     {
-      id: "DR-CYCLE-103", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
+      id: "DR-CYCLE-103", level: "lld", pack: "Design Rules", tier: "T5", type: "structural",
       title: "Modules must not form import cycles",
       owner: "inventory", scope: ["service:Inventory"], severity: "medium", mode: "blocking",
       evidence: "dependency-cruiser", review_by: "2026-09-15", status: "active",
@@ -166,7 +167,7 @@ window.ArchGuardData = (function () {
       health: { fires: 2, fp: 0.0, unknown: 0.0, vacuous: false, overdue: false, last: "6h ago" },
     },
     {
-      id: "DR-PORT-104", level: "lld", pack: "Design Rules", tier: "T3", type: "structural",
+      id: "DR-PORT-104", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
       title: "Persistence must be reached through a port interface",
       owner: "payments", scope: ["layer:application"], severity: "medium", mode: "advisory",
       evidence: "ArchUnit", review_by: "2026-12-31", status: "active",
@@ -177,7 +178,7 @@ window.ArchGuardData = (function () {
       health: { fires: 3, fp: 0.33, unknown: 0.06, vacuous: false, overdue: false, last: "1d ago" },
     },
     {
-      id: "DR-EXPORT-105", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
+      id: "DR-EXPORT-105", level: "lld", pack: "Design Rules", tier: "T5", type: "structural",
       title: "Internal aggregates must not be exported from the package",
       owner: "inventory", scope: ["stereotype:Aggregate"], severity: "low", mode: "advisory",
       evidence: "dependency-cruiser", review_by: "2026-10-01", status: "vacuous",
@@ -433,9 +434,52 @@ window.ArchGuardData = (function () {
     },
   };
 
+  /* ---- Realistic company hierarchy: organization -> department -> sub-department -> team -> service ---- */
+  const org = {
+    name: "Northwind Retail Group",
+    architect: "Enterprise Architecture Board",
+    departments: [
+      {
+        name: "Payments", architect: "j.okafor",
+        subs: [
+          { name: "Checkout", lead: "d.kim", teams: [
+            { name: "Checkout Core", services: ["checkout-api", "checkout-web"] },
+            { name: "Payment Methods", services: ["cards-svc", "wallet-svc"] },
+          ]},
+          { name: "Billing", lead: "s.diaz", teams: [
+            { name: "Invoicing", services: ["invoice-svc", "ledger-svc"] },
+          ]},
+        ],
+      },
+      {
+        name: "Commerce", architect: "m.li",
+        subs: [
+          { name: "Orders", lead: "l.singh", teams: [
+            { name: "Order Management", services: ["orders-svc", "fulfilment-svc"] },
+          ]},
+          { name: "Catalog", lead: "p.nour", teams: [
+            { name: "Inventory", services: ["inventory-svc"] },
+            { name: "Search", services: ["search-svc"] },
+          ]},
+        ],
+      },
+      {
+        name: "Platform", architect: "a.rivera",
+        subs: [
+          { name: "Edge", lead: "t.walsh", teams: [
+            { name: "Gateway", services: ["api-gateway"] },
+          ]},
+          { name: "Identity", lead: "r.gomez", teams: [
+            { name: "Profile", services: ["profile-svc"] },
+          ]},
+        ],
+      },
+    ],
+  };
+
   return {
     product, tiers, primitives, verdicts, modeBadge,
-    rules, exceptions, activity, driftTrend, scorecard,
+    rules, exceptions, activity, driftTrend, scorecard, org,
     scenarios, iterate, chatSuggestions, chatAnswers,
     starterRules, compiledExamples,
   };

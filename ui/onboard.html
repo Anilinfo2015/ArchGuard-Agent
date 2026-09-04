@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · Onboard a service</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content" x-cloak x-data="{ fixed: false }">
+
+    <div class="ag-eyebrow mb-1">For developers · getting started</div>
+    <h1 class="h3 fw-bold mb-2">Onboard a service</h1>
+    <p class="text-secondary mb-4" style="max-width: 72ch;">
+      ArchGuard automates the architecture review — the sign-off where a senior architect checks your
+      design. You skip the meeting: you describe your service as a diagram in code, open a pull request,
+      and the review runs itself. Everything here is PR-driven.
+    </p>
+
+    <!-- four steps -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6 col-xl-3">
+        <div class="card h-100"><div class="card-body">
+          <div class="ag-step-num mb-2">1</div>
+          <h2 class="h6 fw-bold">Draw it as code</h2>
+          <p class="small text-secondary mb-0">Describe your service — its parts and what it talks to —
+            in a C4 / Structurizr model. It's text, so it lives in your repo.</p>
+        </div></div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="card h-100"><div class="card-body">
+          <div class="ag-step-num mb-2">2</div>
+          <h2 class="h6 fw-bold">Open a PR</h2>
+          <p class="small text-secondary mb-0">That pull request <em>is</em> your architecture
+            submission. No separate document, no meeting to book.</p>
+        </div></div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="card h-100"><div class="card-body">
+          <div class="ag-step-num mb-2">3</div>
+          <h2 class="h6 fw-bold">Get reviewed automatically</h2>
+          <p class="small text-secondary mb-0">ArchGuard checks your model against the rules that apply
+            to your org, department and team — the same review an architect would give.</p>
+        </div></div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="card h-100 border-success"><div class="card-body">
+          <div class="ag-step-num mb-2">4</div>
+          <h2 class="h6 fw-bold">Onboarded → continuous</h2>
+          <p class="small text-secondary mb-0">Once merged, you're on the map. Every later PR updates the
+            diagram and re-runs the review, so it never goes stale.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <h2 class="h5 fw-bold mb-2">Try it: submit an architecture for <span class="font-monospace">checkout-api</span></h2>
+    <div class="row g-3">
+      <!-- the submitted architecture-as-code -->
+      <div class="col-lg-7">
+        <div class="card h-100">
+          <div class="card-header d-flex align-items-center">
+            <span class="fw-semibold">architecture.dsl</span>
+            <span class="badge text-bg-secondary ms-2">your submission</span>
+          </div>
+          <div class="card-body">
+            <pre class="code mb-0"><code>workspace {
+  model {
+    checkout = softwareSystem "Checkout" {
+      api = container "Checkout API"
+    }
+    profile = softwareSystem "Profile"
+    gateway = softwareSystem "API Gateway"
+
+    web     -> gateway "HTTPS"
+    gateway -> api     "routes to"
+<span x-show="!fixed">    api     -> profile "reads profile"  "HTTP · sync"</span><span x-show="fixed">    api     -> profile "profile updates" "events · async"</span>
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- the automated review result -->
+      <div class="col-lg-5">
+        <div class="card h-100">
+          <div class="card-header fw-semibold">Automated architecture review</div>
+          <div class="card-body">
+
+            <div class="alert d-flex align-items-start gap-2" :class="fixed ? 'alert-success' : 'alert-danger'">
+              <i class="bi fs-4" :class="fixed ? 'bi-check-circle' : 'bi-x-octagon'"></i>
+              <div>
+                <div class="fw-semibold" x-text="fixed ? 'Approved — ready to onboard' : 'Changes requested'"></div>
+                <div class="small" x-text="fixed ? 'The design respects every rule that applies to Checkout.' : 'One rule failed. Fix it in the PR, just like a review comment.'"></div>
+              </div>
+            </div>
+
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex align-items-center gap-2 px-0">
+                <span class="badge text-bg-success">PASS</span>
+                <span class="small"><span class="font-monospace">ORG-GW-002</span> — traffic enters through the gateway</span>
+              </li>
+              <li class="list-group-item d-flex align-items-start gap-2 px-0">
+                <span class="badge" :class="fixed ? 'text-bg-success' : 'text-bg-danger'" x-text="fixed ? 'PASS' : 'FAIL'"></span>
+                <span class="small">
+                  <span class="font-monospace">PAY-014</span> — Checkout must not depend on Profile synchronously
+                  <span class="d-block text-secondary" x-show="!fixed">Your model calls Profile over HTTP (sync). This rule is inherited from the Payments department.</span>
+                </span>
+              </li>
+            </ul>
+
+            <div class="mt-3 p-2 rounded bg-success-subtle small" x-show="!fixed">
+              <strong>Suggested fix:</strong> read profile data from a local copy kept up to date by
+              events, instead of calling Profile live.
+            </div>
+
+            <button class="btn mt-3" :class="fixed ? 'btn-outline-secondary' : 'btn-success'"
+                    @click="fixed = !fixed"
+                    x-text="fixed ? 'Undo the fix' : 'Apply the suggested fix'"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="small text-secondary mt-3" style="max-width: 72ch;">
+      That's the whole loop. The first PR onboards you; every PR after that keeps your architecture-as-code
+      current and re-runs the same review — so the diagram always matches what you actually built.
+    </p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

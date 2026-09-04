@@ -48,6 +48,7 @@ The left sidebar is the portal menu, grouped by audience.
 | --- | --- | --- |
 | Dashboard | `index.html` | Posture stats, continuous-review activity, why the gate matters for AI-driven PRs |
 | How it works | `how-it-works.html` | The **Define → Automate → Enforce** loop |
+| Company structure | `org.html` | The organization → department → sub-department → team → service hierarchy, and how rules cascade |
 
 **For architects**
 
@@ -56,15 +57,15 @@ The left sidebar is the portal menu, grouped by audience.
 | Author a rule | `author.html` | Type English → compile to a predicate: **expressible**, **needs clarification**, or **rejected**. Never guesses. |
 | Rule catalog | `catalog.html` | Every rule as versioned governance-as-code (ID, owner, predicate, prose, fixtures) |
 | Architecture model | `model.html` | HLD system landscape + LLD design layering, with a toggle to preview a violation |
-| Scorecards | `scorecards.html` | Team / org posture from the same findings the gate produces |
-| Exceptions | `exceptions.html` | Time-boxed, ADR-backed waivers |
+| Scorecards | `scorecards.html` | Team / department posture from the same findings the gate produces |
+| Architecture violations | `exceptions.html` | Known, tracked violations — each owned, ADR-backed and time-boxed to a fix date |
 
 **For developers**
 
 | Page | File | Shows |
 | --- | --- | --- |
+| Onboard a service | `onboard.html` | Submit your architecture-as-code via a PR and get it reviewed automatically |
 | PR checks | `pr-checks.html` | The gate on a PR. Switch scenarios to see all five verdicts + the resolution trace |
-| Ask ArchGuard | `ask.html` | The rules as a developer skill: blast radius, single points of failure, why a rule fails |
 
 ---
 

@@ -133,17 +133,18 @@
     { group: "Overview", items: [
       { file: "index.html", label: "Dashboard", ico: "bi-speedometer2" },
       { file: "how-it-works.html", label: "How it works", ico: "bi-diagram-3" },
+      { file: "org.html", label: "Company structure", ico: "bi-buildings" },
     ]},
     { group: "For architects", items: [
       { file: "author.html", label: "Author a rule", ico: "bi-pencil-square", badge: "AI" },
       { file: "catalog.html", label: "Rule catalog", ico: "bi-collection" },
       { file: "model.html", label: "Architecture model", ico: "bi-diagram-2" },
       { file: "scorecards.html", label: "Scorecards", ico: "bi-clipboard-data" },
-      { file: "exceptions.html", label: "Exceptions", ico: "bi-shield-exclamation" },
+      { file: "exceptions.html", label: "Architecture violations", ico: "bi-shield-exclamation" },
     ]},
     { group: "For developers", items: [
+      { file: "onboard.html", label: "Onboard a service", ico: "bi-box-arrow-in-up", badge: "start" },
       { file: "pr-checks.html", label: "PR checks", ico: "bi-git", badge: String((D.scenarios || []).length) },
-      { file: "ask.html", label: "Ask ArchGuard", ico: "bi-chat-dots", badge: "skill" },
     ]},
   ];
 
@@ -174,7 +175,6 @@
           '<span class="ag-brand-sub d-none d-md-inline">Continuous Architecture Review</span>' +
         "</a>" +
         '<div class="ms-auto d-flex align-items-center gap-2">' +
-          '<span class="badge rounded-pill text-bg-dark border border-secondary"><i class="bi bi-hdd-network me-1"></i>Prototype · no backend</span>' +
           themeToggleHTML() +
         "</div>" +
       "</div></nav>";
