@@ -104,6 +104,7 @@ ready workflow is in [`pipeline/workflows/archguard.yml`](./pipeline/workflows/a
 
 ## Where this is going
 
-See [`idea/README.md`](./idea/README.md) for the consolidated problem statement, product
-hypothesis, architecture, hackathon scope, competitive position, and roadmap.
+See [`idea/00-final-idea.md`](./idea/00-final-idea.md) for the finalized scope: two
+policy packs over one multilevel architecture graph — **Design Rules** (SOLID, layering,
+dependency inversion) and **Fitness Functions** (org, domain, team, service scope).
 
