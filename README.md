@@ -40,3 +40,12 @@ such as SOLID, layering and dependency inversion, and **Fitness Functions** for
 high-level architecture at org, domain, team and service scope — where an LLM compiles
 plain-English rules into deterministic predicates at authoring time and never
 participates in the gate decision.
+
+## UI prototype
+
+A front-end-only prototype of the product experience lives in [`ui/`](./ui/). It is a
+no-backend, no-build static app (open `ui/index.html`, or serve the folder with
+`python3 -m http.server`) that mocks both personas — the **Architect** who authors
+governance and the **Developer** who consumes it in the pipeline — and demonstrates
+**continuous architecture review** across LLD and HLD. See [`ui/README.md`](./ui/README.md).
+
