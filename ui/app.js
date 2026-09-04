@@ -833,8 +833,9 @@
     renderChrome();
     var view = $("#view");
     if (state.view === "landing") { view.innerHTML = Landing(); window.scrollTo(0, 0); return; }
-    var build = BUILD[state.role + "/" + state.view];
-    var out = build ? build() : "<div class='emptybox'>Not found</div>";
+    var key = state.role + "/" + state.view;
+    var build = Object.prototype.hasOwnProperty.call(BUILD, key) ? BUILD[key] : null;
+    var out = typeof build === "function" ? build() : "<div class='emptybox'>Not found</div>";
     if (typeof out === "string") { view.innerHTML = out; }
     else { view.innerHTML = out.html; if (out.wire) out.wire(view); }
     closeDrawer();
