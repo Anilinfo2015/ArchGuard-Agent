@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  engine-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install engine
+        run: python -m pip install -e ./engine
+      - name: Run tests
+        run: python -m pytest engine/tests -q
+
+  compile-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile natural-language rules to architecture-as-code
+        run: |
+          python skill/generate_architecture.py \
+            --rules skill/rules/payments.md \
+            --out skill/generated/payments.policy.json

@@ -1,8 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "archguard-ai"
 version = "0.1.0"
 description = "PR-scoped, evidence-bound architecture drift detection"
 requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["archguard"]
 
 [project.scripts]
 archguard = "archguard.cli:main"

@@ -1,0 +1,8 @@
+# Ownership by area. Replace the placeholders with real GitHub handles.
+# Assign each folder to one hackathon contributor.
+
+/engine/      @engine-owner
+/skill/       @skill-owner
+/pipeline/    @pipeline-owner
+/ui/          @ui-owner
+/pitch/       @pitch-owner

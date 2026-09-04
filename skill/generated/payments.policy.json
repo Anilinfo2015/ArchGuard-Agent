@@ -1,0 +1,40 @@
+{
+  "policies": [
+    {
+      "policyId": "ARC-COM-003",
+      "scope": "domain:payments",
+      "tier": "lld",
+      "severity": "block",
+      "predicate": "require_async_cross_context(target='legacy-billing')",
+      "source": "domain:payments#rule-1",
+      "rationale": "Services in the `payments` domain must not call the `legacy-billing` context synchronously. All cross-context communication must be asynchronous (events)."
+    },
+    {
+      "policyId": "ARC-DEP-001",
+      "scope": "domain:payments",
+      "tier": "hld",
+      "severity": "advisory",
+      "predicate": "allowed_callers([\"payments\", \"checkout\", \"orders\"])",
+      "source": "domain:payments#rule-2",
+      "rationale": "The `payments` domain may only be called by the `checkout` and `orders` contexts."
+    },
+    {
+      "policyId": "ARC-DEP-002",
+      "scope": "domain:payments",
+      "tier": "lld",
+      "severity": "block",
+      "predicate": "no_import(source='src/payments/**', target='src/legacy/**')",
+      "source": "domain:payments#rule-3",
+      "rationale": "No module under `src/payments/**` may import from `src/legacy/**`."
+    },
+    {
+      "policyId": "ARC-SOL-005",
+      "scope": "domain:payments",
+      "tier": "lld",
+      "severity": "advisory",
+      "predicate": "depend_on_abstraction()",
+      "source": "domain:payments#rule-4",
+      "rationale": "Domain services must depend on the `payments-core` interface, not on concrete provider implementations (dependency inversion)."
+    }
+  ]
+}

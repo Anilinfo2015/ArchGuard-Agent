@@ -1,0 +1,42 @@
+# Copy this into a consuming repository's .github/workflows/ to gate PRs on
+# architecture drift. It runs the native parsers, then the ArchGuard action.
+name: ArchGuard architecture review
+
+on:
+  pull_request:
+
+jobs:
+  archguard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Export architecture and evidence
+        run: |
+          mkdir -p build
+          # Replace with your real parser invocations:
+          # structurizr-cli export -workspace workspace.dsl -format json -output build
+          # dependency-cruiser --output-type json src > build/dependencies.json
+          # terraform show -json plan.tfplan > build/terraform-plan.json
+
+      - name: Collect changed files
+        id: changes
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed-files.txt
+          echo "list<<EOF" >> "$GITHUB_OUTPUT"
+          cat changed-files.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: ArchGuard drift check
+        uses: Anilinfo2015/ArchGuard-Agent@main
+        with:
+          structurizr-json: build/workspace.json
+          dependency-cruiser-json: build/dependencies.json
+          terraform-plan-json: build/terraform-plan.json
+          changed-files: ${{ steps.changes.outputs.list }}
