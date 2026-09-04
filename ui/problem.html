@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · The problem</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content">
+    <div class="ag-eyebrow mb-1">Overview</div>
+    <h1 class="h3 fw-bold mb-2">The problem</h1>
+    <p class="text-secondary mb-4" style="max-width: 74ch;">
+      Enterprises approve an architecture once, then change it through thousands of pull requests that
+      no one reviews for architectural intent. Tests, security scanners and IaC checks each guard a
+      narrow concern — none answer <em>"does this change still match the architecture we approved?"</em>
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-person-workspace text-primary"></i><h2 class="h6 fw-bold mb-0">Review is manual</h2></div>
+        <p class="small text-secondary mb-0">Architects compare designs against standards spread across docs and memory. Slow, subjective, gated by a few senior people — so most changes are never reviewed for architecture.</p>
+      </div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-calendar-x text-primary"></i><h2 class="h6 fw-bold mb-0">Reviewed only at inception</h2></div>
+        <p class="small text-secondary mb-0">Sign-off happens once, at kickoff. Hundreds of later PRs change dependencies, topology and ownership. Approval is a snapshot, not proof the delivered system still follows the design.</p>
+      </div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-arrow-repeat text-primary"></i><h2 class="h6 fw-bold mb-0">No continuous review</h2></div>
+        <p class="small text-secondary mb-0">Tests, security and IaC run on every PR; architecture doesn't. "Services must not share a database" is clear to people but invisible to the build, so drift accumulates silently.</p>
+      </div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-question-circle text-primary"></i><h2 class="h6 fw-bold mb-0">Developers can't self-check</h2></div>
+        <p class="small text-secondary mb-0">There's no automated way to test a change against the effective org + domain + team + service rules. Teams interpret guidance differently and make locally convenient choices that couple the system.</p>
+      </div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="card h-100 border-info"><div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-robot text-info"></i><h2 class="h6 fw-bold mb-0">AI writes and reviews the code</h2></div>
+        <p class="small text-secondary mb-0">Agents open PRs faster than people can read them, and AI reviewers approve those same changes. When author and reviewer are both models, nothing independently verifies the change preserves boundaries or design.</p>
+      </div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="card h-100 bg-body-tertiary"><div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-lightning-charge text-warning"></i><h2 class="h6 fw-bold mb-0">Why now</h2></div>
+        <p class="small text-secondary mb-0">The faster code is generated, the more it matters that something reproducible checks its shape. A deterministic, independent architecture check on every PR becomes the missing control.</p>
+      </div></div></div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <h2 class="h6 text-uppercase text-secondary">What the developer feels</h2>
+        <ul class="small text-secondary">
+          <li>Rules are tribal knowledge — you learn a boundary exists when a reviewer objects, days later.</li>
+          <li>No fast "am I allowed to do this?" answer before writing the code.</li>
+          <li>Feedback is late and manual; a PR waits hours or days for an architect.</li>
+          <li>Rework is a redesign, not a tweak — objections arrive after implementation.</li>
+          <li>Two reviewers (or two AI runs) give different answers, so the rule feels arbitrary.</li>
+          <li>Merged today, reverted later when a sweep or incident forces a rollback.</li>
+        </ul>
+      </div>
+      <div class="col-lg-6">
+        <h2 class="h6 text-uppercase text-secondary">A concrete scenario</h2>
+        <div class="card"><div class="card-body small">
+          <p>Checkout keeps Payments available when Customer Profile is degraded: profile data arrives through an event-fed local projection.</p>
+          <p class="mb-2">A developer needs one more profile field and adds a <strong>direct synchronous API call</strong>. It compiles, passes unit tests, passes security scanning, and looks fine in review.</p>
+          <p class="mb-0 text-danger-emphasis">It also puts Customer Profile in the revenue-critical path — its next slowdown now stops checkout, and Payments can no longer deploy independently. Not a bug or a vulnerability: a violated architecture decision, usually found only in a later incident.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="alert alert-secondary mt-4 mb-0">
+      <strong>Root cause:</strong> architecture <em>intent</em> (ADRs, diagrams, policies) is disconnected from delivery <em>evidence</em> (code, IaC, config) by slow, manual, lossy links. The cheapest place to catch a violation is the pull request — every later stage multiplies the cost.
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

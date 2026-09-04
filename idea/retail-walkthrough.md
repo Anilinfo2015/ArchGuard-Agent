@@ -74,6 +74,20 @@ flowchart TD
 **Benefit:** adoption is non-disruptive. Nothing is blocked yet; teams see findings and build
 trust before anything turns red.
 
+### First-time review — architecture-as-code, not a Word doc
+
+When the Recommendations team spins up a new service, they do not write a 40-page design document.
+They add a C4/Structurizr model and design declarations to the repo and onboard it into ArchGuard.
+Within minutes they get their **first architecture review automatically**: inherited org and domain
+rules replayed against the new model and code, with passes, failures, `UNKNOWN`s, and recorded
+debt. A domain architect then reviews those findings, discusses the real trade-offs, approves the
+baseline, and logs any accepted deviations as time-boxed exceptions. From then on the same review
+runs continuously on every PR.
+
+**Benefit:** the upfront ARB document is replaced by a living, executable model; the first review
+is fast and evidence-based; and the architect stays in the loop for judgement, not mechanical
+checks.
+
 ---
 
 ## 4. Authoring a rule (Enterprise Architecture)

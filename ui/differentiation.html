@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · How it's different</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content" x-cloak x-data="{ rows: window.ArchGuardData.differentiation }">
+    <div class="ag-eyebrow mb-1">About</div>
+    <h1 class="h3 fw-bold mb-2">How it's different</h1>
+    <p class="text-secondary mb-3" style="max-width: 74ch;">
+      The difference from an AI review agent isn't code-vs-prose — it's <strong>where the rule lives
+      and whether it's governed</strong>. The model proposes at authoring time; a deterministic fitness
+      function decides at runtime.
+    </p>
+
+    <div class="card mb-4">
+      <div class="table-responsive"><table class="table align-middle mb-0">
+        <thead class="table-light"><tr><th></th><th>AI review skill / agent</th><th class="text-primary">ArchGuard</th></tr></thead>
+        <tbody>
+          <template x-for="r in rows" :key="r.dim">
+            <tr>
+              <td class="fw-semibold" x-text="r.dim"></td>
+              <td class="small text-secondary" x-text="r.agent"></td>
+              <td class="small" x-text="r.ag"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+        <h2 class="h6 fw-bold">vs threat modeling</h2>
+        <p class="small text-secondary mb-0">Threat modeling is a point-in-time security activity over a hand-drawn diagram; it can't block the PR that violates it. ArchGuard makes the threat model an <strong>input</strong>: imported trust boundaries annotate the graph, and a staleness rule fires when a PR introduces a new boundary crossing.</p>
+      </div></div></div>
+      <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+        <h2 class="h6 fw-bold">vs architecture-test libraries</h2>
+        <p class="small text-secondary mb-0">ArchUnit and friends are the deterministic runners ArchGuard <strong>stands on</strong>. The additions: authoring in English (compiled and reviewed, not hand-coded), one graph spanning code + model + infrastructure, and enterprise governance — tiers, exceptions, ownership, scorecards.</p>
+      </div></div></div>
+      <div class="col-lg-4"><div class="card h-100 border-primary"><div class="card-body">
+        <h2 class="h6 fw-bold">The one defensible claim</h2>
+        <p class="small text-secondary mb-0">English rules, compiled once into reviewed, version-controlled predicates, replayed deterministically on every PR with <strong>no model in the gate</strong>, over one graph spanning code structure, declared architecture and deployment topology. Neither half ships elsewhere in this combination.</p>
+      </div></div></div>
+    </div>
+
+    <p class="small text-secondary mt-3 mb-0">A skill is a fine way to <em>invoke</em> ArchGuard from the Copilot CLI — it is not a substitute for the governed, compiled predicate behind it.</p>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

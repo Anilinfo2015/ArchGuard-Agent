@@ -11,7 +11,7 @@
 <body>
   <main class="ag-content" id="ag-content" x-data="{ v: false }">
     <div class="ag-eyebrow mb-1">For architects</div>
-    <h1 class="h3 fw-bold mb-2">Architecture model</h1>
+    <h1 class="h3 fw-bold mb-2">Model &amp; evidence</h1>
     <p class="text-secondary mb-3" style="max-width: 74ch;">
       One multilevel graph. The high-level system landscape drives the Fitness Functions; the low-level
       design layering drives the Design Rules. Declarations are governed inputs — a developer (or an
@@ -56,6 +56,17 @@
         </div>
       </div>
     </div></div>
+
+    <h2 class="h6 text-uppercase text-secondary mt-4">Evidence providers</h2>
+    <p class="small text-secondary" style="max-width:74ch">Native parsers provide the facts; ArchGuard builds no new language frontends. Each provider declares its blind spots, so absence of evidence is never proof of compliance.</p>
+    <div class="card"><div class="table-responsive"><table class="table table-sm align-middle mb-0">
+      <thead class="table-light"><tr><th>Provider</th><th>Parses</th><th>Blind spot</th></tr></thead>
+      <tbody>
+        <template x-for="pv in window.ArchGuardData.providers" :key="pv.name">
+          <tr><td class="fw-semibold small" x-text="pv.name"></td><td class="small text-secondary" x-text="pv.parses"></td><td class="small text-secondary" x-text="pv.blind"></td></tr>
+        </template>
+      </tbody>
+    </table></div></div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

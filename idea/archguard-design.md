@@ -283,7 +283,7 @@ hundred services. A realistic org, and the rule each team would own:
 
 | Tier | Team | Sub-teams | Example architecture rule they own |
 |---|---|---|---|
-| **T0 Regulatory** | Security & Compliance | AppSec, GRC, Privacy | Cardholder data (PAN) may live only inside the `pci` trust boundary; nothing outside it may depend on a service that stores PAN |
+| **T0 Vista Retail** | Retail | retail compnay | Cardholder data (PAN) may live only inside the `pci` trust boundary; nothing outside it may depend on a service that stores PAN |
 | **T1 Org** | Enterprise Architecture | Platform standards, API governance | No service may share another domain's database; every cross-domain call goes through a published API or event |
 | **T2 Domain** | Checkout & Payments | Cart, Checkout, Payments, Fraud | Checkout must not synchronously depend on Customer Profile; payment authorization must cross the `PaymentGateway` port |
 | **T2 Domain** | Catalog & Search | Product, Pricing, Search, Recommendations | Pricing is the only writer of the price store; Search reads the catalog projection, never the product DB |
@@ -608,6 +608,40 @@ $ archguard check            # replays the same gate over your working tree
 This closes the developer self-service gap (problem 4) and lets an AI coding agent **self-check its
 own change against org and team architecture before it ever opens a pull request** — the same
 deterministic verdict, just earlier. Command names above are illustrative.
+
+### 6.2 First-time onboarding: architecture-as-code, not a Word doc
+
+A new system's first architecture review is traditionally a large Word document and a scheduled ARB
+meeting. ArchGuard replaces the **document**, not the architect. Onboarding a repo:
+
+1. **Describe the architecture as code.** The team writes the C4/Structurizr model and design
+   declarations (layers, ports, stereotypes) in the repo — a diagram-as-code artifact versioned
+   next to the code, instead of a Word doc that is stale the day it is signed.
+2. **Onboard into the tool.** ArchGuard ingests that model plus the existing code and IaC as
+   evidence, builds the graph, and runs the inherited org and domain rules for the first time.
+3. **Immediate first review.** Within minutes the team gets a concrete report: which inherited
+   rules pass, which fail, what is `UNKNOWN` for missing evidence, and the current recorded debt —
+   an automated, reproducible first review before any meeting.
+4. **Human architect in the loop.** The architect reviews the machine's findings and the model,
+   spends the conversation on the genuine trade-offs the tool deliberately routes to a human,
+   approves the baseline, and records accepted deviations as time-boxed exceptions.
+5. **Then it is continuous.** From that point the same rules run on every PR and every drift sweep.
+   The one-time onboarding review becomes an always-on review, and the architect shifts from
+   gatekeeper to curator.
+
+```mermaid
+flowchart LR
+    AaC["Architecture as code<br/>C4/Structurizr + design declarations"] --> ON["Onboard repo<br/>ingest model + code + IaC"]
+    ON --> R0["Immediate first review<br/>replay org + domain rules"]
+    R0 --> HUM["Human architect in the loop<br/>reviews findings + trade-offs, approves baseline"]
+    HUM --> CONT["Continuous review<br/>every PR + drift sweep"]
+    CONT -.->|"model changes"| AaC
+```
+
+**Benefit:** onboarding yields a living, executable architecture description instead of a Word doc
+nobody re-reads. The first review is faster and evidence-based, the architect's time goes to
+judgement rather than mechanical checking, and the system never silently drifts from the picture it
+was approved as.
 
 ---
 

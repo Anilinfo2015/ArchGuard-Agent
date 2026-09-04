@@ -132,19 +132,25 @@
   var NAV = [
     { group: "Overview", items: [
       { file: "index.html", label: "Dashboard", ico: "bi-speedometer2" },
+      { file: "problem.html", label: "The problem", ico: "bi-exclamation-diamond" },
       { file: "how-it-works.html", label: "How it works", ico: "bi-diagram-3" },
-      { file: "org.html", label: "Company structure", ico: "bi-buildings" },
     ]},
     { group: "For architects", items: [
       { file: "author.html", label: "Author a rule", ico: "bi-pencil-square", badge: "AI" },
       { file: "catalog.html", label: "Architecture rules", ico: "bi-collection" },
-      { file: "model.html", label: "Architecture model", ico: "bi-diagram-2" },
+      { file: "governance.html", label: "Governance", ico: "bi-shield-check" },
       { file: "scorecards.html", label: "Scorecards", ico: "bi-clipboard-data" },
-      { file: "exceptions.html", label: "Architecture violations", ico: "bi-shield-exclamation" },
+      { file: "exceptions.html", label: "Violations & exceptions", ico: "bi-shield-exclamation" },
     ]},
     { group: "For developers", items: [
+      { file: "model.html", label: "Model & evidence", ico: "bi-diagram-2" },
       { file: "onboard.html", label: "Onboard a service", ico: "bi-box-arrow-in-up", badge: "start" },
       { file: "pr-checks.html", label: "PR checks", ico: "bi-git", badge: String((D.scenarios || []).length) },
+      { file: "drift.html", label: "Drift radar", ico: "bi-broadcast-pin" },
+    ]},
+    { group: "About", items: [
+      { file: "differentiation.html", label: "How it's different", ico: "bi-stars" },
+      { file: "org.html", label: "Company example", ico: "bi-buildings" },
     ]},
   ];
 

@@ -18,12 +18,12 @@ window.ArchGuardData = (function () {
 
   /* ---- The multi-tier scope model (idea 00, Component 2) ---- */
   const tiers = [
-    { id: "T1", name: "Organization", owner: "Enterprise Architecture Board", scope: "Every system in the company", change: "Enterprise architecture review", color: "T1" },
-    { id: "T2", name: "Department", owner: "Department architect", scope: "One department / business unit (e.g. Payments)", change: "Department architecture review", color: "T2" },
-    { id: "T3", name: "Sub-department", owner: "Sub-department lead", scope: "A group of teams within a department (e.g. Checkout)", change: "Sub-department review", color: "T3" },
-    { id: "T4", name: "Team", owner: "Owning team", scope: "The services a team owns", change: "Normal team pull request", color: "T4" },
-    { id: "T5", name: "Service", owner: "Service owner", scope: "One service / one repository", change: "Service owner pull request", color: "T5" },
-    { id: "X", name: "Exception", owner: "Named approver", scope: "One rule, one scope, one expiry", change: "ADR-backed, time-boxed, self-terminating", color: "X" },
+    { id: "T0", name: "Regulatory", owner: "Security & Compliance", scope: "Company-wide, non-negotiable architecture mandates (e.g. trust-boundary placement)", change: "Formal board review", color: "T0" },
+    { id: "T1", name: "Org", owner: "Enterprise Architecture", scope: "Every system in the company", change: "Enterprise architecture review", color: "T1" },
+    { id: "T2", name: "Domain", owner: "Domain architect", scope: "One domain / bounded-context group", change: "Domain review", color: "T2" },
+    { id: "T3", name: "Team", owner: "Owning team", scope: "The services a team owns", change: "Normal team pull request", color: "T3" },
+    { id: "T4", name: "Service", owner: "Service owner", scope: "One service / one repository", change: "Service owner pull request", color: "T4" },
+    { id: "X", name: "Exception", owner: "Named approver", scope: "One rule, one scope, one expiry", change: "ADR-backed, time-boxed, self-expiring", color: "X" },
   ];
 
   /* ---- The closed primitive set (the anti-CodeQL guardrail) ---- */
@@ -54,7 +54,7 @@ window.ArchGuardData = (function () {
   const rules = [
     /* ----- HLD : Fitness Functions ----- */
     {
-      id: "ORG-ISO-000", level: "hld", pack: "Fitness Functions", tier: "T1", type: "structural",
+      id: "ORG-ISO-000", level: "hld", pack: "Fitness Functions", tier: "T0", type: "structural",
       title: "Sensitive data must stay inside its owning domain",
       owner: "arb", scope: ["boundary:payments-data"], severity: "high", mode: "blocking",
       evidence: "architecture-model", review_by: "2026-09-30", status: "active",
@@ -120,7 +120,7 @@ window.ArchGuardData = (function () {
       health: { fires: 4, fp: 0.0, unknown: 0.0, vacuous: false, overdue: false, last: "12m ago" },
     },
     {
-      id: "SVC-INV-021", level: "hld", pack: "Fitness Functions", tier: "T5", type: "operational",
+      id: "SVC-INV-021", level: "hld", pack: "Fitness Functions", tier: "T4", type: "operational",
       title: "Inventory service fan-out must not exceed 5",
       owner: "inventory", scope: ["service:Inventory"], severity: "medium", mode: "advisory",
       evidence: "architecture-model (trend)", review_by: "2026-10-31", status: "active",
@@ -133,7 +133,7 @@ window.ArchGuardData = (function () {
 
     /* ----- LLD : Design Rules ----- */
     {
-      id: "DR-DIP-101", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
+      id: "DR-DIP-101", level: "lld", pack: "Design Rules", tier: "T3", type: "structural",
       title: "Domain layer must depend only on abstractions",
       owner: "payments", scope: ["layer:domain", "service:Checkout API"], severity: "high", mode: "blocking",
       evidence: "dependency-cruiser / ArchUnit", review_by: "2026-11-30", status: "active",
@@ -144,7 +144,7 @@ window.ArchGuardData = (function () {
       health: { fires: 5, fp: 0.0, unknown: 0.04, vacuous: false, overdue: false, last: "40m ago" },
     },
     {
-      id: "DR-LAYER-102", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
+      id: "DR-LAYER-102", level: "lld", pack: "Design Rules", tier: "T3", type: "structural",
       title: "Controllers may not depend on repositories directly",
       owner: "payments", scope: ["layer:controller", "service:Checkout API"], severity: "high", mode: "blocking",
       evidence: "dependency-cruiser / ArchUnit", review_by: "2026-11-30", status: "active",
@@ -155,7 +155,7 @@ window.ArchGuardData = (function () {
       health: { fires: 8, fp: 0.12, unknown: 0.0, vacuous: false, overdue: false, last: "55m ago" },
     },
     {
-      id: "DR-CYCLE-103", level: "lld", pack: "Design Rules", tier: "T5", type: "structural",
+      id: "DR-CYCLE-103", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
       title: "Modules must not form import cycles",
       owner: "inventory", scope: ["service:Inventory"], severity: "medium", mode: "blocking",
       evidence: "dependency-cruiser", review_by: "2026-09-15", status: "active",
@@ -166,7 +166,7 @@ window.ArchGuardData = (function () {
       health: { fires: 2, fp: 0.0, unknown: 0.0, vacuous: false, overdue: false, last: "6h ago" },
     },
     {
-      id: "DR-PORT-104", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
+      id: "DR-PORT-104", level: "lld", pack: "Design Rules", tier: "T3", type: "structural",
       title: "Persistence must be reached through a port interface",
       owner: "payments", scope: ["layer:application"], severity: "medium", mode: "advisory",
       evidence: "ArchUnit", review_by: "2026-12-31", status: "active",
@@ -177,7 +177,7 @@ window.ArchGuardData = (function () {
       health: { fires: 3, fp: 0.33, unknown: 0.06, vacuous: false, overdue: false, last: "1d ago" },
     },
     {
-      id: "DR-EXPORT-105", level: "lld", pack: "Design Rules", tier: "T5", type: "structural",
+      id: "DR-EXPORT-105", level: "lld", pack: "Design Rules", tier: "T4", type: "structural",
       title: "Internal aggregates must not be exported from the package",
       owner: "inventory", scope: ["stereotype:Aggregate"], severity: "low", mode: "advisory",
       evidence: "dependency-cruiser", review_by: "2026-10-01", status: "vacuous",
@@ -476,10 +476,60 @@ window.ArchGuardData = (function () {
     ],
   };
 
+  /* ---- Evidence providers (native parsers; facts in, no new frontends) ---- */
+  const providers = [
+    { name: "C4 / Structurizr model", parses: "Declared systems, containers, boundaries", blind: "Only what is modeled" },
+    { name: "Dependency parser", parses: "Imports, calls, module graph", blind: "Reflection, dynamic dispatch" },
+    { name: "IaC plan (Terraform / Bicep)", parses: "Planned resources and references", blind: "Runtime-only wiring" },
+    { name: "Threat-model boundaries", parses: "Trust boundaries", blind: "Non-security intent" },
+    { name: "Runtime traces (optional)", parses: "Observed calls and modes", blind: "Unsampled paths" },
+  ];
+
+  /* ---- Permanent non-goals (the anti-CodeQL boundary) ---- */
+  const nonGoals = [
+    "Injection / XSS / SSRF / CWE detection", "Taint tracking", "Null / leak / off-by-one",
+    "Dead code", "Formatting / naming lint", "Secret scanning", "SCA / CVE / license",
+    "Coverage policing", "Perf micro-optimization", "Generic code-smell scoring", "Statement-level fixes",
+  ];
+
+  /* ---- What may block (capability matrix) ---- */
+  const capabilityMatrix = [
+    { family: "Layer direction, allowed dependencies, cycles, placement, ownership", gate: "May block" },
+    { family: "C4 intent vs an unambiguous IaC-plan relationship", gate: "May block" },
+    { family: "Coupling / instability budgets, structural SOLID proxies", gate: "May block (as proxies)" },
+    { family: "SRP / OCP, Liskov, semantic contract compatibility, resilience", gate: "Advisory only" },
+    { family: "Latency, cost, error budgets (external metrics)", gate: "Trend only" },
+    { family: "Trade-offs and taste", gate: "Routed to the review board" },
+  ];
+
+  /* ---- vs AI review skills / agents ---- */
+  const differentiation = [
+    { dim: "Where the rule lives", agent: "Prose re-read each run", ag: "Compiled predicate in git" },
+    { dim: "Who decides", agent: "The model, every PR", ag: "A human, once, approving the predicate" },
+    { dim: "Reproducibility", agent: "Re-decides; verdicts drift", ag: "Re-plays; same input, same verdict" },
+    { dim: "At scale", agent: "200 repos, 200 interpretations", ag: "One predicate, evaluated identically" },
+    { dim: "Evidence", agent: "A prose opinion", ag: "Rule id, file:line, traversal path" },
+    { dim: "Required check?", agent: "No", ag: "Yes — the point" },
+    { dim: "Testability", agent: "Cannot unit-test a prompt", ag: "Every rule ships pass/fail fixtures in CI" },
+    { dim: "Governance", agent: "None", ag: "Tiers, only-stricter, CODEOWNERS, expiring exceptions" },
+    { dim: "When wrong", agent: "You argue with it", ag: "You PR the predicate, or file an expiring exception" },
+  ];
+
+  /* ---- Intent vs reality: declared C4 model vs planned IaC ---- */
+  const driftExample = {
+    declared: ["web → gateway (https)", "gateway → orders (sync)", "orders → orders-db (owns)", "checkout → profile (async, events)"],
+    planned: ["web → gateway (https)", "gateway → orders (sync)", "orders → orders-db (owns)", "orders → inventory-db (sync)  ⟵ undeclared", "checkout → profile (sync)  ⟵ mode drift"],
+    findings: [
+      { sev: "block", rule: "ORG-DATA-001", text: "The IaC plan permits orders → inventory-db, a cross-domain path the model never declared." },
+      { sev: "block", rule: "PAY-014", text: "Planned checkout → profile is synchronous; the declared model requires async (event projection)." },
+    ],
+  };
+
   return {
     product, tiers, primitives, verdicts, modeBadge,
     rules, exceptions, activity, driftTrend, scorecard, org,
     scenarios, iterate, chatSuggestions, chatAnswers,
     starterRules, compiledExamples,
+    providers, nonGoals, capabilityMatrix, differentiation, driftExample,
   };
 })();
