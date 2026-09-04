@@ -128,16 +128,15 @@ textbox(s, 1, 5.4, 11.3, 0.6, "Internal hackathon pitch", size=16, color=LIGHT, 
 
 # 2. Problem
 s = slide()
-header(s, "The problem")
-bullets(s, 0.8, 1.6, 11.7, 5, [
-    "Architecture is reviewed once at an ARB, then drifts silently.",
-    "Rules live in Confluence and people's heads — not enforced in code.",
-    "By the time drift is found, it is expensive to unwind.",
-    "Generic AI PR reviewers are non-deterministic and cannot gate a merge.",
-], size=22)
-textbox(s, 0.8, 6.0, 11.7, 0.8,
-        "\u201cWe review architecture at the start, then hope. Drift is discovered late.\u201d",
-        size=20, bold=True, color=BLUE)
+header(s, "The problem", "Architecture review is a point-in-time event, not a continuous practice")
+bullets(s, 0.8, 1.9, 11.7, 4.2, [
+    "Reviewed once, then it drifts — signed off at kickoff, maybe revisited at an ARB every ~6 months; code drifts in between until it is expensive to unwind.",
+    "Rules are hard to enforce because they are hard to update — they live in wikis, slides, and senior engineers' heads, so they go stale and get ignored.",
+    "Developers can't follow what they can't see — guidance is verbal and tribal, never expressed as architecture-as-code, so there is no check on the PR.",
+], size=20)
+textbox(s, 0.8, 6.2, 11.7, 0.9,
+        "Architecture intent is never turned into an executable, always-on check that runs where developers work — the pull request.",
+        size=18, bold=True, color=BLUE)
 
 # 3. The idea
 s = slide()

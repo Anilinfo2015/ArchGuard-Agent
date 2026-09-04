@@ -10,6 +10,24 @@ parser-derived evidence and blocks only on high-confidence drift — with a poli
 
 > The model proposes at authoring time. The compiled rule decides at runtime.
 
+## The problem
+
+Architecture review today is a **point-in-time event, not a continuous practice** — and
+it breaks down in three ways:
+
+- **Reviewed once, then it drifts.** Architecture is signed off at project kickoff and
+  maybe revisited at an ARB every six months. Between those checkpoints the code drifts
+  from the intended design, and nobody notices until it is expensive to unwind.
+- **Rules are hard to enforce because they are hard to update.** Governance lives in
+  wikis, slide decks, and senior engineers' heads. Because there is no easy way to change
+  them, they go stale, contradict each other, and get ignored.
+- **Developers can't follow what they can't see.** Guidance is verbal and tribal, never
+  expressed as **architecture-as-code**. There is no automated check on a PR, so
+  violations are caught late in a manual review — if at all.
+
+**The gap:** architecture intent is never turned into an executable, always-on check that
+runs where developers actually work — the pull request.
+
 ## The idea in one picture
 
 ```mermaid

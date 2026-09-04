@@ -17,12 +17,18 @@ _Internal hackathon pitch_
 
 ## The problem
 
-- Architecture is reviewed **once** at an ARB, then drifts silently.
-- Rules live in Confluence and people's heads — not enforced in code.
-- By the time drift is found, it is expensive to unwind.
-- Generic AI PR reviewers are non-deterministic and can't **gate** a merge.
+Architecture review today is a **point-in-time event, not a continuous practice**:
 
-> We review architecture at the start, then hope. Drift is discovered late.
+- **Reviewed once, then it drifts.** Signed off at kickoff, maybe revisited at an ARB
+  every ~6 months. Code drifts in between and nobody notices until it's expensive.
+- **Rules are hard to enforce because they're hard to update.** They live in wikis,
+  slides, and senior engineers' heads — so they go stale and get ignored.
+- **Developers can't follow what they can't see.** Guidance is verbal and tribal, never
+  expressed as **architecture-as-code**, so there's no check on the PR.
+
+> Architecture intent is never turned into an executable, always-on check that runs
+> where developers work — the pull request.
+
 
 ---
 
