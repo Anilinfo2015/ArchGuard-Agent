@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · Ask ArchGuard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content" x-cloak x-data="{
+      suggestions: AG.D.chatSuggestions,
+      answers: AG.D.chatAnswers,
+      q: '',
+      log: [{ who: 'bot', html: AG.D.chatAnswers.__default__.text, foot: AG.D.chatAnswers.__default__.foot }],
+      send(text) {
+        const t = (text || this.q).trim();
+        if (!t) return;
+        this.log.push({ who: 'user', text: t });
+        const a = this.answers[t.toLowerCase()] || this.answers.__default__;
+        this.log.push({ who: 'bot', html: a.text, ascii: a.ascii, foot: a.foot });
+        this.q = '';
+        this.$nextTick(() => { const el = this.$refs.log; if (el) el.scrollTop = el.scrollHeight; });
+      }
+    }">
+
+    <div class="ag-eyebrow mb-1">Developer · self-serve architecture answers</div>
+    <h1 class="h3 fw-bold mb-2">Ask ArchGuard</h1>
+    <p class="text-secondary mb-3" style="max-width: 72ch;">
+      Ask a question about the architecture and get an answer grounded in the declared model and the
+      compiled rules. This explains and guides — the gate decision still runs deterministic predicates,
+      with no model in the path.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <template x-for="s in suggestions" :key="s">
+        <button class="btn btn-sm btn-outline-secondary" @click="send(s)" x-text="s"></button>
+      </template>
+    </div>
+
+    <div class="card">
+      <div class="ag-chat-log" x-ref="log">
+        <template x-for="(m, i) in log" :key="i">
+          <div class="ag-msg" :class="m.who">
+            <div class="ag-bubble">
+              <div x-show="m.who === 'user'" x-text="m.text"></div>
+              <div x-show="m.who === 'bot'" x-html="m.html"></div>
+              <pre class="ascii" x-show="m.ascii" x-text="m.ascii"></pre>
+              <div class="small text-secondary mt-2" x-show="m.foot" x-html="m.foot"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="card-footer">
+        <form class="d-flex gap-2" @submit.prevent="send()">
+          <input class="form-control" x-model="q" placeholder="Ask about blast radius, a single point of failure, or why a rule fails…" />
+          <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <p class="small text-secondary mt-3" style="max-width: 72ch;">
+      In production the skill answers over your real model — the same knowledge the gate uses. It is the
+      shift-left version of the check: ask "can I call this?" before you write the code, not after the PR
+      is blocked.
+    </p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

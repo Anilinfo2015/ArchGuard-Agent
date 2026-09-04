@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · PR checks</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content" x-cloak x-data="{
+      scenarios: AG.D.scenarios,
+      sel: AG.D.scenarios[0].id,
+      get sc() { return this.scenarios.find(s => s.id === this.sel); },
+      get gate() { return AG.gateOf(this.sc.ruleResults); },
+      get findings() { return this.sc.ruleResults.filter(r => ['FAIL','UNKNOWN','ERROR'].includes(r.v)); },
+      rule(id) { return AG.rulesById[id] || { title: id }; }
+    }">
+
+    <div class="ag-eyebrow mb-1">Developer · the gate in your pipeline</div>
+    <h1 class="h3 fw-bold mb-2">Pull-request checks</h1>
+    <p class="text-secondary mb-3" style="max-width: 72ch;">
+      This is what runs on every pull request. ArchGuard replays each applicable fitness function over
+      the base and head of the change and reports on the delta — the same input always gives the same
+      verdict, because no model sits in the decision.
+    </p>
+
+    <div class="alert alert-info d-flex align-items-start gap-2" style="max-width: 74ch;">
+      <i class="bi bi-robot fs-5"></i>
+      <div class="small">
+        When an AI agent opens and merges this PR with no human reading the diff, this deterministic
+        check is the last line of defence against a broken boundary at the HLD or LLD level.
+      </div>
+    </div>
+
+    <!-- scenario picker -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <template x-for="s in scenarios" :key="s.id">
+        <button class="btn btn-sm" :class="s.id === sel ? 'btn-primary' : 'btn-outline-secondary'"
+                @click="sel = s.id" x-text="s.name"></button>
+      </template>
+    </div>
+
+    <!-- PR header -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+          <span class="badge text-bg-secondary" x-text="'PR #' + sc.pr.num"></span>
+          <span class="fw-semibold" x-text="sc.pr.title"></span>
+          <span class="badge rounded-pill text-bg-light border" x-text="sc.pr.branch"></span>
+          <span class="small text-secondary" x-text="'@' + sc.pr.author"></span>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <template x-for="f in sc.pr.files" :key="f.path">
+            <span class="badge rounded-pill" :class="f.changed ? 'text-bg-warning' : 'text-bg-light border'">
+              <i class="bi bi-file-earmark-diff me-1"></i><span x-text="f.path"></span>
+            </span>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- gate banner -->
+    <div class="alert d-flex align-items-start gap-3"
+         :class="'alert-' + gate.cls">
+      <i class="bi fs-3" :class="gate.ico"></i>
+      <div>
+        <h2 class="h5 mb-1" x-text="gate.title"></h2>
+        <div class="small mb-0" x-text="gate.sub"></div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <!-- findings -->
+      <div class="col-lg-7">
+        <h3 class="h6 text-uppercase text-secondary mb-2">Findings on this delta</h3>
+        <template x-if="findings.length === 0">
+          <div class="card"><div class="card-body text-success"><i class="bi bi-check-circle me-1"></i>
+            No blocking findings — every applicable rule passed.</div></div>
+        </template>
+        <template x-for="r in findings" :key="r.rule">
+          <div class="card mb-2">
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge" :class="'text-bg-' + ({FAIL:'danger',UNKNOWN:'warning',ERROR:'dark'}[r.v] || 'secondary')" x-text="r.v"></span>
+                <span class="font-monospace small" x-text="r.rule"></span>
+                <span class="fw-semibold" x-text="rule(r.rule).title"></span>
+              </div>
+              <p class="small text-secondary mb-2" x-show="r.why" x-text="r.why"></p>
+              <blockquote class="border-start border-3 ps-3 small text-body-secondary mb-2"
+                          x-show="rule(r.rule).body" x-text="rule(r.rule).body"></blockquote>
+              <div class="small text-secondary" x-show="rule(r.rule).evidence">
+                <i class="bi bi-search me-1"></i>evidence provider: <span x-text="rule(r.rule).evidence"></span>
+              </div>
+              <div class="mt-2 p-2 rounded bg-success-subtle small" x-show="r.v === 'FAIL' && rule(r.rule).fixtures">
+                <strong>Safer design:</strong> <span x-text="rule(r.rule).fixtures ? rule(r.rule).fixtures.pass : ''"></span>.
+                <span class="text-secondary">Request an exception only via an ADR.</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- resolution trace -->
+      <div class="col-lg-5">
+        <h3 class="h6 text-uppercase text-secondary mb-2">Policy resolution trace</h3>
+        <div class="card">
+          <div class="list-group list-group-flush">
+            <template x-for="r in sc.ruleResults" :key="r.rule">
+              <div class="list-group-item d-flex align-items-start gap-2">
+                <span class="badge" :class="'text-bg-' + ({PASS:'success',FAIL:'danger',UNKNOWN:'warning',ERROR:'dark',SKIPPED:'secondary'}[r.v] || 'secondary')" x-text="r.v"></span>
+                <div class="small">
+                  <span class="font-monospace" x-text="r.rule"></span> — <span x-text="rule(r.rule).title"></span>
+                  <span class="text-secondary d-block" x-show="r.why" x-text="r.why"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+          <div class="card-body small text-secondary">
+            A gate that cannot explain why it stayed silent is as untrustworthy as one that cannot
+            explain why it fired. <strong>SKIPPED</strong> and <strong>UNKNOWN</strong> are always shown,
+            never hidden as a pass.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

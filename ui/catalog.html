@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · Rule catalog</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content"
+        x-data="{ d: window.ArchGuardData, tab: 'all', sel: null,
+                  rows() { return this.d.rules.filter(r => this.tab==='all' || r.level===this.tab); },
+                  open(r) { this.sel = r; new bootstrap.Modal(document.getElementById('ruleModal')).show(); } }">
+
+    <div class="ag-eyebrow mb-1">For architects</div>
+    <h1 class="h3 fw-bold mb-2">Rule catalog</h1>
+    <p class="text-secondary mb-3" style="max-width: 72ch;">
+      Every rule is versioned governance-as-code: a stable ID cited in every report, an owner matched to
+      CODEOWNERS, the compiled predicate, and the original prose. Click a row to see the detail.
+    </p>
+
+    <ul class="nav nav-pills mb-3">
+      <li class="nav-item"><button class="nav-link" :class="tab==='all' && 'active'" @click="tab='all'">All rules</button></li>
+      <li class="nav-item"><button class="nav-link" :class="tab==='hld' && 'active'" @click="tab='hld'">Fitness Functions · HLD</button></li>
+      <li class="nav-item"><button class="nav-link" :class="tab==='lld' && 'active'" @click="tab='lld'">Design Rules · LLD</button></li>
+    </ul>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>ID</th><th>Title</th><th>Level</th><th>Tier</th><th>Mode</th><th>Review by</th></tr>
+          </thead>
+          <tbody>
+            <template x-for="r in rows()" :key="r.id">
+              <tr class="ag-clickable" @click="open(r)">
+                <td class="font-monospace small" x-text="r.id"></td>
+                <td>
+                  <div x-text="r.title"></div>
+                  <div class="small text-secondary" x-text="r.pack + ' · ' + r.type"></div>
+                </td>
+                <td x-html="window.AG.levelBadge(r.level)"></td>
+                <td x-html="window.AG.tierBadge(r.tier)"></td>
+                <td x-html="window.AG.modeBadge(r.mode)"></td>
+                <td class="font-monospace small" x-text="r.review_by"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Detail modal -->
+    <div class="modal fade" id="ruleModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" x-show="sel" x-cloak>
+          <div class="modal-header">
+            <div>
+              <div class="mb-1" x-html="sel && (window.AG.levelBadge(sel.level) + ' ' + window.AG.tierBadge(sel.tier) + ' ' + window.AG.modeBadge(sel.mode))"></div>
+              <h5 class="modal-title mb-0" x-text="sel && sel.title"></h5>
+              <div class="small text-secondary"><span class="font-monospace" x-text="sel && sel.id"></span> · owner <span x-text="sel && sel.owner"></span></div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="small text-secondary">Rule (team's own words)</div>
+            <blockquote class="border-start border-3 ps-3 my-2" x-text="sel && sel.body"></blockquote>
+            <div class="small text-secondary mt-3 mb-1">Compiled predicate</div>
+            <div x-html="sel && window.AG.predicateHTML(sel.predicate)"></div>
+            <div class="row g-2 mt-2">
+              <div class="col-6"><div class="p-2 rounded bg-body-tertiary fixture-pass"><div class="small fw-semibold text-success">✓ PASS</div><div class="small" x-text="sel && sel.fixtures.pass"></div></div></div>
+              <div class="col-6"><div class="p-2 rounded bg-body-tertiary fixture-fail"><div class="small fw-semibold text-danger">✕ FAIL</div><div class="small" x-text="sel && sel.fixtures.fail"></div></div></div>
+            </div>
+            <div class="small text-secondary mt-3 mb-1">Scope</div>
+            <div class="d-flex flex-wrap gap-1">
+              <template x-for="s in (sel ? sel.scope : [])" :key="s"><span class="badge text-bg-light border" x-text="s"></span></template>
+            </div>
+            <div class="row mt-3 small">
+              <div class="col-6 col-md-3"><div class="text-secondary">Fires · 30d</div><div class="fw-semibold" x-text="sel && sel.health.fires"></div></div>
+              <div class="col-6 col-md-3"><div class="text-secondary">False-positive</div><div class="fw-semibold" x-text="sel && Math.round(sel.health.fp*100)+'%'"></div></div>
+              <div class="col-6 col-md-3"><div class="text-secondary">UNKNOWN rate</div><div class="fw-semibold" x-text="sel && Math.round(sel.health.unknown*100)+'%'"></div></div>
+              <div class="col-6 col-md-3"><div class="text-secondary">Review by</div><div class="fw-semibold font-monospace" x-text="sel && sel.review_by"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

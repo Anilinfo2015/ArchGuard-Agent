@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · Scorecards</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content" x-data="{ s: window.ArchGuardData.scorecard }">
+    <div class="ag-eyebrow mb-1">For architects</div>
+    <h1 class="h3 fw-bold mb-2">Scorecards</h1>
+    <p class="text-secondary mb-4" style="max-width: 72ch;">
+      Team and org posture, derived from the same findings the gate produces — updated continuously, not
+      at release time. Trends inform; finding-sets gate.
+    </p>
+
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="card h-100">
+          <div class="card-header d-flex align-items-center"><span class="fw-semibold" x-text="'Team · ' + s.team.name"></span><span class="badge text-bg-success ms-auto">healthy</span></div>
+          <div class="card-body">
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small"><span class="text-secondary">Own-rule pass rate</span><span x-text="Math.round(s.team.ownRulePass*100)+'%'"></span></div>
+              <div class="progress" style="height:8px"><div class="progress-bar bg-success" :style="`width:${s.team.ownRulePass*100}%`"></div></div>
+            </div>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small"><span class="text-secondary">Org-rule pass rate</span><span x-text="Math.round(s.team.orgRulePass*100)+'%'"></span></div>
+              <div class="progress" style="height:8px"><div class="progress-bar bg-info" :style="`width:${s.team.orgRulePass*100}%`"></div></div>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between px-0"><span class="text-secondary">Active exceptions</span><span x-text="s.team.activeExceptions"></span></li>
+              <li class="list-group-item d-flex justify-content-between px-0"><span class="text-secondary">Recorded architecture debt</span><span x-text="s.team.debt"></span></li>
+              <li class="list-group-item d-flex justify-content-between px-0"><span class="text-secondary">Ratchet — no new cross-boundary deps</span><span class="text-success">holding</span></li>
+              <li class="list-group-item d-flex justify-content-between px-0"><span class="text-secondary">Recurring violation</span><span class="small" x-text="s.team.recurring[0]"></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="card h-100">
+          <div class="card-header fw-semibold">Org &amp; domain posture</div>
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead class="table-light"><tr><th>Domain</th><th>Posture</th><th>Open high-severity</th><th>Blocked · 30d</th></tr></thead>
+              <tbody>
+                <template x-for="d in s.org" :key="d.domain">
+                  <tr>
+                    <td x-text="d.domain"></td>
+                    <td><span class="badge" :class="{'text-bg-success': d.posture==='Good','text-bg-danger': d.posture==='At risk','text-bg-warning': d.posture==='Watch'}" x-text="d.posture"></span></td>
+                    <td x-text="d.high"></td>
+                    <td x-text="d.blocked30d"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-secondary mt-4"><i class="bi bi-info-circle me-1"></i><strong>Recorded debt is not your fault line.</strong> Pre-existing findings are attributed to the baseline; the gate only blocks on what a pull request newly introduces.</div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

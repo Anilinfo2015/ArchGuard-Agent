@@ -1,7 +1,7 @@
 /* =========================================================================
    ArchGuard · Continuous Architecture Review — mock data (no backend)
    Every value here is illustrative/hard-coded for the prototype. It mirrors
-   the finalized product in idea/00-final-idea.md:
+  the consolidated product in idea/README.md:
      - two policy packs: Design Rules (LLD) + Fitness Functions (HLD)
      - a closed primitive set (AI compiles English -> predicate at authoring time)
      - five verdicts (PASS / FAIL / UNKNOWN / ERROR / SKIPPED)

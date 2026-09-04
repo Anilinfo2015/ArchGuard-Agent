@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · How it works</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="./portal.css" rel="stylesheet" />
+</head>
+<body>
+  <main class="ag-content" id="ag-content">
+    <div class="ag-eyebrow mb-1">How it works</div>
+    <h1 class="h3 fw-bold mb-2">Define → Automate → Enforce</h1>
+    <p class="text-secondary mb-4" style="max-width: 70ch;">
+      The whole idea in three steps. Writing a rule stays as easy as writing a sentence; enforcing it
+      becomes automatic and repeatable.
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-2"><span class="ag-step-num">1</span><h5 class="mb-0">Define</h5></div>
+          <p class="mb-0 text-secondary">
+            An architect writes the rule in plain English — via a Markdown pull request or the UI.
+            No DSL, no special syntax. Anyone who can describe the constraint can author it.
+          </p>
+        </div></div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-2"><span class="ag-step-num">2</span><h5 class="mb-0">Automate</h5></div>
+          <p class="mb-0 text-secondary">
+            An LLM compiles that sentence — once, at authoring time — into an architectural
+            <strong>fitness function</strong>: a deterministic predicate with generated test fixtures,
+            reviewed by a human like any other change.
+          </p>
+        </div></div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-2"><span class="ag-step-num">3</span><h5 class="mb-0">Enforce</h5></div>
+          <p class="mb-0 text-secondary">
+            The pipeline replays that fitness function on every pull request. Findings carry a policy ID
+            and <span class="inline-code">file:line</span>. High-confidence drift blocks the merge.
+          </p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="alert alert-secondary d-flex align-items-start gap-3">
+      <i class="bi bi-robot fs-4"></i>
+      <div>
+        <h6 class="mb-1">Why this matters now</h6>
+        <p class="mb-0 text-secondary">
+          More and more pull requests are opened, reviewed and merged by AI agents with no human reading
+          the diff. Agents are great at local correctness and blind to the architecture they can't see.
+          A deterministic gate is what keeps an autonomous change from crossing a boundary, sharing a
+          datastore, or turning an async contract into a synchronous one.
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-4 align-items-center mt-1">
+      <div class="col-lg-6">
+        <h5 class="mb-2">The model proposes. The compiled rule decides.</h5>
+        <p class="text-secondary">
+          The only place a language model runs is step 2 — turning English into a predicate, under human
+          review. At gate time there is <strong>no model in the decision path</strong>, so the same pull
+          request always gets the same verdict. That is what makes the check trustworthy enough to block a merge.
+        </p>
+        <a href="author.html" class="btn btn-info"><i class="bi bi-pencil-square me-1"></i>Try authoring a rule</a>
+      </div>
+      <div class="col-lg-6">
+        <div class="card"><div class="card-body">
+          <div class="small text-secondary mb-1">English rule</div>
+          <p class="fst-italic">“Modules in <span class="inline-code">payments</span> must not call <span class="inline-code">legacy-billing</span> synchronously.”</p>
+          <div class="small text-secondary mb-1">Compiled fitness function</div>
+          <pre class="code mb-0"><code>{
+  <span class="tok-p">"policyId"</span>: <span class="tok-s">"ARC-COM-003"</span>,
+  <span class="tok-p">"scope"</span>: <span class="tok-s">"domain:payments"</span>,
+  <span class="tok-p">"tier"</span>: <span class="tok-s">"lld"</span>,
+  <span class="tok-p">"severity"</span>: <span class="tok-s">"block"</span>,
+  <span class="tok-p">"predicate"</span>: <span class="tok-s">"require_async_cross_context('legacy-billing')"</span>
+}</code></pre>
+        </div></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./data.js"></script>
+  <script src="./portal.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>
