@@ -17,14 +17,19 @@ _Internal hackathon pitch_
 
 ## The problem
 
-Architecture review today is a **point-in-time event, not a continuous practice**:
+A **two-sided pain** — felt by the developer and the architect every day:
+
+- **The developer** must ship fast but doesn't hold the whole architecture in their head —
+  so they cross a boundary without knowing it existed.
+- **The architect** has no lever except email — nudging teams rule by rule, thread by
+  thread. Governance by reminder doesn't scale.
+
+And structurally, architecture review is a point-in-time event:
 
 - **Reviewed once, then it drifts.** Signed off at kickoff, maybe revisited at an ARB
   every ~6 months. Code drifts in between and nobody notices until it's expensive.
 - **Rules are hard to enforce because they're hard to update.** They live in wikis,
-  slides, and senior engineers' heads — so they go stale and get ignored.
-- **Developers can't follow what they can't see.** Guidance is verbal and tribal, never
-  expressed as **architecture-as-code**, so there's no check on the PR.
+  slides, and heads — never as **architecture-as-code**, so there's no check on the PR.
 
 > Architecture intent is never turned into an executable, always-on check that runs
 > where developers work — the pull request.
@@ -32,15 +37,17 @@ Architecture review today is a **point-in-time event, not a continuous practice*
 
 ---
 
-## The idea
+## The idea — Define, Automate, Enforce
 
-1. Architects write rules in **plain English** (org / domain / team / service, HLD + LLD)
-   — via a Markdown PR or the UI.
-2. An **LLM compiles** each rule into **architecture-as-code** — once, at authoring time.
-3. The **pipeline** runs the compiled rules **deterministically** on every PR.
-4. Findings carry a **policy ID + `file:line`**. High-confidence drift **blocks**.
+Make architecture rules as easy to write as a sentence, and automatic to enforce.
 
-> The model proposes at authoring time. The compiled rule decides at runtime.
+1. **Define** — write the rule in **plain English**. No DSL, no special syntax.
+2. **Automate** — an **LLM** turns it into an architectural **fitness function**
+   (architecture-as-code), once, at authoring time.
+3. **Enforce** — the **pipeline** runs that fitness function **deterministically** on
+   every PR; high-confidence drift **blocks** with a policy ID + `file:line`.
+
+> The model proposes at authoring time. The fitness function decides at runtime.
 
 ---
 

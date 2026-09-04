@@ -2,18 +2,32 @@
 
 **Continuous architecture review at every step — not once.**
 
-Architects define org-, domain-, team- and service-level rules (HLD and LLD) in plain
-English. An LLM compiles them into **architecture-as-code** at authoring time. On every
-pull request, the pipeline runs those compiled rules deterministically against
-parser-derived evidence and blocks only on high-confidence drift — with a policy ID and
-`file:line` for every finding.
+Write your architecture rules in **plain English**. An LLM turns them into automated
+**architectural fitness functions** — deterministic checks that run on every pull request.
+No DSL to learn, no rules rotting in a wiki.
 
-> The model proposes at authoring time. The compiled rule decides at runtime.
+**Define → Automate → Enforce**
+
+1. **Define** — an architect writes a rule in natural language (org / domain / team /
+   service, HLD + LLD), via a Markdown PR or the UI. Easy: no special syntax.
+2. **Automate** — an LLM compiles each rule into an architectural **fitness function**
+   (architecture-as-code) once, at authoring time.
+3. **Enforce** — the pipeline runs those fitness functions deterministically on every PR
+   and blocks high-confidence drift, with a policy ID and `file:line` for every finding.
+
+> The model proposes at authoring time. The fitness function decides at runtime.
 
 ## The problem
 
-Architecture review today is a **point-in-time event, not a continuous practice** — and
-it breaks down in three ways:
+Architecture review today is a **point-in-time event, not a continuous practice** — and it
+hurts **both sides** of the team every day:
+
+- **The developer** must ship fast but doesn't hold the whole architecture in their head, so
+  they cross a boundary without knowing it existed.
+- **The architect** has no lever except email — nudging teams rule by rule, thread by thread.
+  Governance by reminder doesn't scale.
+
+It also breaks down in three structural ways:
 
 - **Reviewed once, then it drifts.** Architecture is signed off at project kickoff and
   maybe revisited at an ARB every six months. Between those checkpoints the code drifts

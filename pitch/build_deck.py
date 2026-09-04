@@ -128,27 +128,28 @@ textbox(s, 1, 5.4, 11.3, 0.6, "Internal hackathon pitch", size=16, color=LIGHT, 
 
 # 2. Problem
 s = slide()
-header(s, "The problem", "Architecture review is a point-in-time event, not a continuous practice")
-bullets(s, 0.8, 1.9, 11.7, 4.2, [
+header(s, "The problem", "A two-sided pain — for the developer and the architect")
+bullets(s, 0.8, 1.7, 11.7, 4.4, [
+    "Developers must ship fast but don't hold the whole architecture in their head — so they cross a boundary without knowing it existed.",
+    "Architects have no lever except email — nudging teams rule by rule, thread by thread. Governance by reminder doesn't scale.",
     "Reviewed once, then it drifts — signed off at kickoff, maybe revisited at an ARB every ~6 months; code drifts in between until it is expensive to unwind.",
-    "Rules are hard to enforce because they are hard to update — they live in wikis, slides, and senior engineers' heads, so they go stale and get ignored.",
-    "Developers can't follow what they can't see — guidance is verbal and tribal, never expressed as architecture-as-code, so there is no check on the PR.",
-], size=20)
-textbox(s, 0.8, 6.2, 11.7, 0.9,
+    "Rules are hard to enforce because they are hard to update — they live in wikis, slides, and heads, never as architecture-as-code, so there is no check on the PR.",
+], size=18)
+textbox(s, 0.8, 6.3, 11.7, 0.8,
         "Architecture intent is never turned into an executable, always-on check that runs where developers work — the pull request.",
-        size=18, bold=True, color=BLUE)
+        size=17, bold=True, color=BLUE)
 
 # 3. The idea
 s = slide()
-header(s, "The idea")
-bullets(s, 0.8, 1.6, 11.7, 4.5, [
-    "Architects write rules in plain English (org / domain / team / service, HLD + LLD).",
-    "An LLM compiles each rule into architecture-as-code — once, at authoring time.",
-    "The pipeline runs the compiled rules deterministically on every PR.",
+header(s, "The idea — Define, Automate, Enforce")
+bullets(s, 0.8, 1.7, 11.7, 4.2, [
+    "Define — write the rule in plain English. No DSL, no special syntax; easy for any architect.",
+    "Automate — an LLM turns it into an architectural fitness function (architecture-as-code), once, at authoring time.",
+    "Enforce — the pipeline runs that fitness function deterministically on every PR.",
     "Findings carry a policy ID + file:line. High-confidence drift blocks the merge.",
-], size=22)
-textbox(s, 0.8, 6.1, 11.7, 0.8,
-        "The model proposes at authoring time. The compiled rule decides at runtime.",
+], size=21)
+textbox(s, 0.8, 6.2, 11.7, 0.8,
+        "The model proposes at authoring time. The fitness function decides at runtime.",
         size=20, bold=True, color=GREEN)
 
 # 4. Flow diagram
