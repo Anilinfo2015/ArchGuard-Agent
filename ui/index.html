@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchGuard · Continuous Architecture Review</title>
+  <meta name="description" content="A no-backend prototype for continuous architecture review — architecture governance that runs on every change, like CI/CD." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="topbar" id="topbar">
+    <div class="topbar__left">
+      <button class="brand" id="brand" type="button" aria-label="Go to home">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        </span>
+        <span class="brand__text">
+          <strong>ArchGuard</strong>
+          <em>Continuous Architecture Review</em>
+        </span>
+      </button>
+    </div>
+
+    <div class="topbar__center">
+      <div class="roleswitch" id="roleswitch" role="tablist" aria-label="Choose a persona">
+        <button class="roleswitch__btn" data-role="architect" role="tab" type="button">
+          <span class="roleswitch__ico" aria-hidden="true">◑</span> Architect
+        </button>
+        <button class="roleswitch__btn" data-role="developer" role="tab" type="button">
+          <span class="roleswitch__ico" aria-hidden="true">◐</span> Developer
+        </button>
+      </div>
+    </div>
+
+    <div class="topbar__right">
+      <span class="pill pill--ghost" title="This is a front-end only prototype. No server, no live LLM calls.">
+        <span class="dot"></span> UI prototype · no backend
+      </span>
+      <button class="iconbtn" id="themeToggle" type="button" title="Toggle light / dark" aria-label="Toggle theme">
+        <span data-theme-icon>☾</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- App shell -->
+  <div class="shell" id="shell">
+    <aside class="sidebar" id="sidebar" aria-label="Section navigation"></aside>
+    <main class="main" id="view" tabindex="-1"></main>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
